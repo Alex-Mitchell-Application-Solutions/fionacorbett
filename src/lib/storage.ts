@@ -1,6 +1,8 @@
 import { s3Storage } from '@payloadcms/storage-s3'
 import type { Plugin } from 'payload'
 
+import { UPLOAD_COLLECTIONS } from '@/lib/uploads'
+
 /**
  * Object storage for uploads.
  *
@@ -68,11 +70,18 @@ function readS3Settings(): S3Settings | null {
   }
 }
 
-/** Both upload collections go to the same bucket, at its root. */
-const MANAGED_COLLECTIONS = {
-  media: { prefix: '' },
-  'memory-photos': { prefix: '' },
-} as const
+/**
+ * Every upload collection goes to the same bucket, at its root.
+ *
+ * Derived from UPLOAD_COLLECTIONS rather than written out, so this is not a
+ * third list to keep in step with the other two. A collection missing from here
+ * writes to the container disk instead of the bucket, and the container disk
+ * does not survive a redeploy — so the failure is a photograph someone scanned
+ * silently disappearing on the next deploy.
+ */
+const MANAGED_COLLECTIONS = Object.fromEntries(
+  UPLOAD_COLLECTIONS.map((slug) => [slug, { prefix: '' }]),
+)
 
 /**
  * The storage plugin, registered in every environment and enabled only where a

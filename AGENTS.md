@@ -289,6 +289,15 @@ people read messages they wrote to Fiona.
 - **`depth: 2` is stated on every query.** Too shallow returns a number where a
   document was expected and `PayloadImage` renders nothing at all — a blank page
   with no error.
+- **An upload collection is added in `src/lib/uploads.ts`, not in three places.**
+  `UPLOAD_COLLECTIONS` feeds the image optimiser's allow-list in
+  `next.config.ts`, the S3 plugin's managed collections in `storage.ts`, and the
+  test that checks the list against the collection source. Adding
+  `memory-photos` updated two of those and not the third, which produced a page
+  that built cleanly and threw `Invalid src prop … does not match
+  images.localPatterns` on the first request rendering a guest's photograph —
+  past lint, typecheck, the build and the container check. `uploads.test.ts`
+  fails now if a collection declares an `upload` block and is not in the list.
 - **Migrations are generated, committed, and applied by the deploy.** Never on
   container start: a multi-replica deploy would race, and "we only run one
   replica" is a thing that changes without anyone remembering.

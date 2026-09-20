@@ -3,6 +3,8 @@ import type { NextConfig } from 'next'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
+import { uploadImagePatterns } from './src/lib/uploads'
+
 const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
 
@@ -19,8 +21,24 @@ const nextConfig: NextConfig = {
    * Development only. No effect on a build, so nothing here reaches production.
    */
   allowedDevOrigins: ['*.local'],
+  /**
+   * Which local paths next/image is allowed to optimise.
+   *
+   * One entry per upload collection, because Payload serves each collection's
+   * files from its own slug: `media` from /api/media/file/** and
+   * `memory-photos` from /api/memory-photos/file/**. This is not a wildcard by
+   * choice — an unrestricted localPatterns lets any path on the origin be fed
+   * through the image optimiser, which is a resource amplifier.
+   *
+   * **Adding an upload collection means adding a line here.** Forgetting is not
+   * a build failure: `next build` prerendered /memories perfectly happily, and
+   * the page only threw `Invalid src prop … does not match images.localPatterns`
+   * when a request actually rendered a memory that had a photograph attached.
+   * So it fails on the first guest submission with an image, in production,
+   * having passed every check before it.
+   */
   images: {
-    localPatterns: [{ pathname: '/api/media/file/**' }],
+    localPatterns: uploadImagePatterns(),
   },
   async redirects() {
     return [
