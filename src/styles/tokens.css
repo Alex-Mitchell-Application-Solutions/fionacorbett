@@ -1,0 +1,270 @@
+/**
+ * Design tokens. Start here for anything visual.
+ *
+ * Feature code references these and never a literal value. The ESLint
+ * no-restricted-syntax rule fails on hex literals in src/** to keep it that way.
+ *
+ * The structure of this layer — the ramp, the surface and text steps, the fluid
+ * type scale, the page inset — is lifted from luxury-gardens, deliberately. The
+ * colours are not: that palette is a landscaping brand's sage and olive, and
+ * this site's whole job is to show photographs taken across six decades on film,
+ * on early digital, and on phones. Their colour casts are all over the place. A
+ * warm neutral ground flatters all of them; a green one fights the older ones.
+ *
+ * So: warm ivory ground, near-black ink, antique gold as the only chromatic
+ * accent. An album on a table, not a brand.
+ *
+ * Every contrast ratio in the comments below was measured with the WCAG formula,
+ * not estimated. Where a value was moved, the comment says what it was and what
+ * it failed. Light-only; a dark theme is not in scope.
+ */
+
+@theme {
+  /* ---------------------------------------------------------------------
+   * Brand ramp. A warm neutral from parchment to ink, with the gold accent
+   * at 900 — the same shape as luxury-gardens' sage ramp, where 900 is
+   * likewise the one chromatic step rather than the darkest neutral.
+   * ------------------------------------------------------------------ */
+  --color-brand-50: #fbf9f5; /* the page ground: warm ivory, not white */
+  --color-brand-100: #f2ede4;
+  --color-brand-200: #e8e0d3; /* the signature parchment, for bands and cards */
+  --color-brand-300: #d8cebd;
+  --color-brand-400: #b9ac97;
+  --color-brand-500: #8d8375;
+  --color-brand-600: #5c554b;
+  --color-brand-700: #3a352e; /* derived: 600 and 800 are too far apart to interpolate a hover */
+  --color-brand-800: #26231e; /* the ink everything is set in */
+  --color-brand-900: #8a6f3d; /* antique gold, the one accent */
+
+  /* ---------------------------------------------------------------------
+   * Surfaces.
+   * ------------------------------------------------------------------ */
+  --color-surface: #fbf9f5;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #f2ede4;
+  --color-surface-accent: #e8e0d3;
+  --color-surface-inverse: #26231e;
+
+  /* The cover laid over a photograph on a card, at partial opacity. Its own
+   * value rather than --color-surface-inverse: this is a neutral grey and should
+   * read as a wash over a photograph, not as the site's warm ink spilled on it.
+   * A warm scrim over a 1970s photograph that is already warm makes it orange. */
+  --color-scrim: #2e2c29;
+
+  /* ---------------------------------------------------------------------
+   * Text. Four steps plus the accent — enough for a brochure site. The
+   * memory form adds no text steps, only the status colours below.
+   * ------------------------------------------------------------------ */
+  --color-text: #26231e; /* 14.89:1 on --color-surface, measured */
+  --color-text-muted: #5c554b; /* 6.99:1 on surface, 5.61:1 on accent. Body copy that recedes */
+  --color-text-subtle: #6b6255; /* 5.70:1 on surface, 4.58:1 on accent. Captions, dates, metadata */
+  --color-text-inverse: #fbf9f5; /* 14.89:1 on --color-surface-inverse, measured */
+
+  /* The gold, as text. NOT --color-brand-900, which is #8a6f3d and reaches only
+   * 3.63:1 on --color-surface-accent and 4.07:1 on --color-surface-sunken —
+   * under the 4.5:1 minimum on two of the four grounds we use. Darkened until it
+   * clears 4.5:1 on all of them: 5.93 / 6.24 / 5.35 / 4.76 respectively.
+   * brand-900 stays as it is for the ornament it was chosen for. */
+  --color-text-accent: #755d31;
+
+  /* The gold on a dark ground — a hairline or an eyebrow over a hero photograph.
+   * brand-900 measures 3.30:1 on --color-surface-inverse, which is large-text
+   * only, and an eyebrow is small text. This is 6.93:1, measured. */
+  --color-text-accent-inverse: #c9a86a;
+
+  /* ---------------------------------------------------------------------
+   * Lines. Two decorative weights and one that is not decorative.
+   * ------------------------------------------------------------------ */
+  --color-line: #d8cebd; /* a rule between sections. 1.48:1 — deliberately barely there */
+  --color-line-strong: #b9ac97; /* a card edge. 2.12:1 on surface */
+
+  /* The border of an input, a checkbox, a focusable card — anything whose
+   * boundary carries meaning rather than decoration.
+   *
+   * Its own token because WCAG 1.4.11 wants 3:1 for a control boundary and both
+   * lines above are far under it. They are correct for a divider, where low
+   * contrast is the design; they are a bug on a text field, where the border is
+   * how you find the box. 4.01:1 on surface, 4.22:1 on raised, 3.22:1 on accent,
+   * all measured — it clears 3:1 on every ground a form sits on. */
+  --color-line-control: #847a6c;
+
+  --color-line-inverse: #5c554b;
+
+  /* ---------------------------------------------------------------------
+   * Status. The gallery pages should never show one of these. The memory
+   * form shows all of them.
+   * ------------------------------------------------------------------ */
+  /* 6.68:1 on surface, 5.36:1 on accent. Was #4f7934, which fell to 3.89:1 on
+   * the accent ground — under the minimum on the surface the form's success
+   * panel actually sits on. */
+  --color-success: #3f6228;
+  --color-warning: #8a6d1f;
+  --color-danger: #8c3a30; /* 7.23:1 on surface, measured */
+
+  /* The tint behind a field that failed validation. Pale enough that the message
+   * and the value stay readable on it: --color-danger measures 6.33:1 and
+   * --color-text 13.04:1. Against the page it is barely a shade, which is the
+   * point — the underline and the message carry the signal, the tint locates it. */
+  --color-danger-soft: #f7e7e3;
+
+  /* The focus ring. The gold, at the text weight, so a keyboard user is led
+   * around the page in the accent colour rather than in a browser blue that
+   * belongs to nothing here. 5.93:1 on surface, 4.76:1 on accent. */
+  --color-focus: #755d31;
+
+  /* ---------------------------------------------------------------------
+   * Type. One serif for display, one sans for everything read rather than
+   * scanned. Both SIL Open Font License 1.1 and both self-hosted; see
+   * fonts.css and public/fonts/LICENSE.txt.
+   * ------------------------------------------------------------------ */
+  --font-display: 'Cormorant Garamond', 'Times New Roman', serif;
+  /* The same serif as authored, where --font-display forces capitals. A level-one
+   * heading takes this and a level two takes the other; that is the whole
+   * distinction between them. */
+  --font-title: 'Cormorant Garamond', 'Times New Roman', serif;
+  --font-heading: 'Lato', system-ui, sans-serif;
+  --font-body: 'Lato', system-ui, sans-serif;
+
+  /* Type scale. Fluid between the narrowest supported viewport and 1440px, so
+   * there is no width at which a heading is awkwardly sized. */
+  --text-3xs: 0.6875rem;
+  --text-2xs: 0.75rem;
+  --text-xs: 0.8125rem;
+  --text-sm: 0.875rem;
+  /* Body copy, and the size the page inherits from base.css. 18px rather than
+   * 16px: a lot of this site is other people's writing, read on a phone, often
+   * by people over sixty. */
+  --text-base: 1.125rem;
+  --text-lg: 1.25rem;
+  /* Lead copy: the sentence or two that opens a page. Its own step rather than
+   * --text-xl, which the scale spends on a small heading. A lead is read and a
+   * heading is a statement, so the heading steps with the viewport and this
+   * stays put. Fluid only across the phone range. */
+  --text-lead: clamp(1.25rem, 0.4vw + 1.15rem, 1.375rem);
+  --text-xl: clamp(1.25rem, 0.5vw + 1.1rem, 1.5rem);
+  --text-2xl: clamp(1.5rem, 1vw + 1.25rem, 2rem);
+  --text-3xl: clamp(1.875rem, 1.6vw + 1.4rem, 2.75rem);
+  --text-4xl: clamp(2.25rem, 2.6vw + 1.5rem, 3.75rem);
+  --text-5xl: clamp(2.75rem, 4vw + 1.5rem, 5rem);
+  /* The home page's two large text links, and nothing else. They are the page's
+   * whole navigation, so they are sized as a statement rather than as a control. */
+  --text-6xl: clamp(3rem, 6vw + 1.25rem, 6.5rem);
+
+  --leading-tight: 1.1;
+  --leading-snug: 1.25;
+  --leading-normal: 1.6;
+  /* Guest-written prose runs longer and less edited than copy we write. It gets
+   * the loosest step on the scale. */
+  --leading-relaxed: 1.75;
+
+  /* The serif is set with air between letters wherever it is capitalised. */
+  --tracking-display: 0.06em;
+  --tracking-heading: 0.02em;
+  --tracking-body: 0;
+  --tracking-eyebrow: 0.18em;
+
+  /* ---------------------------------------------------------------------
+   * Layout. Content is narrower than the section width, so a text measure
+   * stays readable while imagery runs wider.
+   * ------------------------------------------------------------------ */
+  /* --container-* is Tailwind's namespace for max-width utilities, so these
+   * generate max-w-prose, max-w-content and max-w-wide rather than needing an
+   * arbitrary value at every call site. */
+  /* A single column of reading. A memory's body sets to this.
+   *
+   * --container-measure, not --container-prose, and the name is load-bearing:
+   * `max-w-prose` is a Tailwind built-in fixed at 65ch that a theme token does
+   * NOT override. Defining --container-prose here compiles silently and the
+   * utility keeps the built-in value, so the measure would be 65ch while this
+   * file claimed 68ch. Named out of the collision instead. */
+  --container-measure: 68ch;
+  /* A column wider than a reading measure but narrower than the page — a
+   * two-column memory card, or a single photograph shown on its own. */
+  --container-feature: 56rem;
+  --container-content: 72rem;
+  --container-wide: 90rem;
+
+  /* The page's left edge. The logo, the hero's copy and every full-bleed band
+   * begin on this axis, so a band that opts out of it has to say so. */
+  --spacing-page-inset: 1.5rem;
+  --spacing-page-inset-lg: 4rem;
+
+  /* The gutter between the viewport edge and content, for a container that is
+   * still growing. Distinct from --spacing-page-inset, which is the axis a
+   * centred container arrives at; the two agree at narrow widths and diverge
+   * once the container caps. */
+  --spacing-gutter: 1.5rem;
+  --spacing-gutter-lg: 2.5rem;
+
+  /* Vertical rhythm between sections. Generous: this is a site you scroll
+   * slowly, and the white space is doing as much work as the photographs. */
+  --spacing-section: 4.5rem;
+  --spacing-section-lg: 7rem;
+
+  /* The fixed header's height, as a token: the hero pads by it so copy anchored
+   * to the foot of a short screen cannot slide under the bar. */
+  --spacing-header: 5rem;
+
+  /* Hero height. svh rather than vh, lvh or dvh, and the choice is load-bearing:
+   * vh and lvh both measure the viewport with the mobile browser chrome
+   * retracted, so a hero sized in either is taller than the screen on first
+   * paint and its copy starts below the fold. dvh re-measures as the chrome
+   * slides, which reflows the hero mid-scroll. svh is the smallest stable
+   * measurement and the only one that is correct on arrival and stays still. */
+  --spacing-hero: 84svh;
+
+  /* ---------------------------------------------------------------------
+   * Radii. Nearly square. A photograph in an album has corners.
+   * ------------------------------------------------------------------ */
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.1875rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-full: 9999px;
+
+  /* ---------------------------------------------------------------------
+   * Elevation. Warm-tinted rather than neutral black, so a shadow on the
+   * ivory ground reads as depth rather than as dirt.
+   * ------------------------------------------------------------------ */
+  --shadow-sm: 0 1px 2px rgb(38 35 30 / 0.06);
+  --shadow-md: 0 4px 12px rgb(38 35 30 / 0.08);
+  --shadow-lg: 0 12px 32px rgb(38 35 30 / 0.12);
+  /* A photograph lifted off the page — the gallery's hover state, and the
+   * lightbox. Deeper and still warm. */
+  --shadow-plate: 0 18px 48px rgb(38 35 30 / 0.18);
+
+  /* ---------------------------------------------------------------------
+   * Motion. Everything here is suppressed under prefers-reduced-motion in
+   * base.css, once, so no component has to remember.
+   * ------------------------------------------------------------------ */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 400ms;
+  /* A gallery image fading in, and the lightbox opening. Slow enough to read as
+   * a page being turned rather than as a transition. */
+  --duration-plate: 600ms;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* ---------------------------------------------------------------------
+   * Z-index. Named, so no component invents a number.
+   *
+   * Tailwind v4 has no theme namespace for z-index, so these generate no
+   * utilities on their own — utilities.css declares the classes that read them.
+   * ------------------------------------------------------------------ */
+  --z-base: 0;
+  --z-raised: 10;
+  --z-sticky: 20;
+  --z-header: 30;
+  --z-drawer: 40;
+  --z-lightbox: 50;
+
+  /* ---------------------------------------------------------------------
+   * Opacity. The site's few fixed transparencies, named so the number is
+   * written once.
+   * ------------------------------------------------------------------ */
+  --opacity-dimmed: 0.6;
+  /* The wash over a photograph on a gallery card, before hover lifts it. */
+  --opacity-plate: 0.35;
+}

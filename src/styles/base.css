@@ -1,0 +1,184 @@
+/**
+ * The accessibility and motion floor, set once so no component has to remember.
+ *
+ * Everything here is a global default. A component that needs to opt out of one
+ * of these is a conversation, not a local override.
+ */
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    /* Light only. Declared so form controls and scrollbars match rather than
+     * rendering in the OS dark palette against our warm light surfaces. */
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+    /*
+     * How text breaks, set at the root so it inherits everywhere — including
+     * into guest-written memories, which is text nobody here proofread.
+     *
+     * `pretty` rather than `balance` as the default, and they are not better and
+     * worse versions of the same thing. `balance` evens every line in a block,
+     * but browsers cap it at a few lines and fall back to ordinary wrapping past
+     * that, so on a long paragraph it gives nothing. `pretty` does less — it
+     * avoids ending on a very short last line — but it does it at any length.
+     * Short blocks opt into `balance` where they are written.
+     */
+    text-wrap: pretty;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /*
+     * Hyphenation, on by default and switched off as the measure widens.
+     *
+     * Written this way round deliberately. The instinct is "hyphenate on small
+     * screens", which is a max-width rule and the desktop-down thinking this
+     * codebase excludes. The narrowest viewport is the base case, so hyphenation
+     * is the base state and md turns it off.
+     *
+     * A narrow column gives the line-breaker very little room, so line lengths
+     * swing and the right edge goes lumpy. A comfortable measure does not have
+     * that problem, and hyphens in it read as fussy.
+     *
+     * <html lang="en-GB"> is what makes these British patterns rather than
+     * American ones. It inserts no character into the DOM, so copied and indexed
+     * text are unchanged.
+     */
+    hyphens: auto;
+  }
+
+  @media (width >= 48rem) {
+    body {
+      hyphens: manual;
+    }
+  }
+
+  /* Headings inherit from the type scale rather than browser defaults, so a bare
+   * <h2> is never accidentally styled. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin: 0;
+    /* The serif, so a bare heading is never accidentally set in the sans. The
+     * Heading primitive adds the case and the size. */
+    font-family: var(--font-display);
+    font-weight: 300;
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-display);
+    /* Evened at every length. A heading past the browser's cap for this is a
+     * heading that should be shorter — a copy problem, not a CSS one. */
+    text-wrap: balance;
+    /* Never hyphenated, whatever the viewport. A broken word in a heading reads
+     * as a fault rather than as typesetting. */
+    hyphens: manual;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  /* Images are block-level and fluid by default. Explicit width and height still
+   * belong on every <img>: layout shift is a bug, and this site is almost
+   * entirely images. */
+  img,
+  picture,
+  video,
+  canvas,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
+
+  a {
+    color: inherit;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* Visible focus, always, in the site's own accent rather than a browser blue
+   * that belongs to nothing here. :focus-visible rather than :focus, so a mouse
+   * click leaves no ring behind while keyboard navigation always shows one. */
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  /*
+   * A pointer over anything that does something.
+   *
+   * The user agent gives a <button> `cursor: default`, which is correct for a
+   * form control on a document and wrong for every control here: the gallery
+   * arrows read as inert until you click one. Tailwind's preflight does not set
+   * it, so without this nothing has it.
+   *
+   * Set on the element rather than on hover, because the cursor is what the
+   * pointer is over, not a change that happens when it arrives. `:disabled` is
+   * excluded: a control that cannot be used should not invite the click.
+   */
+  :where(button, [role='button'], a[href], summary, label[for], select):not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* Comfortable touch targets. 44px is the smallest a thumb reliably hits, and
+   * a good share of this audience is not twenty. */
+  a,
+  button,
+  [role='button'],
+  input[type='submit'] {
+    touch-action: manipulation;
+  }
+
+  :where(button, [role='button'], a[href], input, select, textarea) {
+    min-height: 44px;
+  }
+
+  /* Inline links inside prose are not touch targets and should not be stretched.
+   * Memories are guest-written and may well contain one. */
+  :where(p, li, span) > :where(a[href]) {
+    min-height: 0;
+  }
+}
+
+/**
+ * Motion is suppressed globally rather than per animation, so a new component
+ * cannot forget. Kept to a near-zero duration rather than `none`, because some
+ * transitions fire completion events the UI depends on.
+ *
+ * No exceptions. If one is ever wanted, it gets argued for here rather than
+ * quietly omitted at a call site.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

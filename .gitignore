@@ -1,0 +1,45 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# builds
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# test output
+coverage/
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+
+# Local uploads. Without S3 configured, Payload writes files to a directory
+# beside the collection slug at the repository root — ./media and
+# ./memory-photos. These are real uploads on a developer's machine and
+# generated placeholders after `pnpm run seed`; neither belongs in git.
+/media/
+/memory-photos/
+
+# Secrets. The committed template is env.example, without a leading dot —
+# matching luxury-gardens — so it is not matched by either pattern here and
+# needs no negation.
+.env
+.env.*
+
+# platform
+.vercel
+.railway/plan.json
+
+# os and editor
+.DS_Store
+*.pem
+npm-debug.log*
+.idea/
+
+# scratch space that is deliberately not committed
+.local-files/

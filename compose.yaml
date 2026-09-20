@@ -1,0 +1,23 @@
+# Postgres for local development, and nothing else. The app runs on the host
+# with `pnpm run dev`, so this file exists only so a checkout needs one command
+# before it works.
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: fionacorbett
+      POSTGRES_PASSWORD: fionacorbett
+      POSTGRES_DB: fionacorbett
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U fionacorbett']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:

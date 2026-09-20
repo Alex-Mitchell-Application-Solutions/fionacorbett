@@ -1,0 +1,58 @@
+/**
+ * Self-hosted fonts. No CDN: that is a third-party request on every page and,
+ * in the UK, a privacy question we would rather not have to answer on a site
+ * carrying family photographs.
+ *
+ * Cormorant Garamond and Lato are both SIL Open Font License 1.1, which permits
+ * redistributing the WOFF2 conversions. The licence ships beside them at
+ * public/fonts/LICENSE.txt. Check the licence before adding a fourth: several
+ * otherwise-free faces forbid redistributing renamed or converted files, which
+ * rules out a WOFF2 build.
+ *
+ * Two families, one rule: a capitalised heading is the serif, everything else is
+ * the sans.
+ *
+ * Cormorant Garamond is variable, so one file covers 300-700. Lato is static and
+ * ships one file per weight — 300 for large display text, 400 for body, 700 for
+ * strong. Three weights and no more; a fourth would be bytes nothing renders.
+ *
+ * Latin subset only. The audience is UK.
+ *
+ * font-display: swap everywhere, so text is readable before the font arrives.
+ * Only the body weight on the critical path is preloaded, in layout.tsx —
+ * preloading more than that makes them compete with the hero photograph, which
+ * is the LCP element on every page here.
+ */
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: normal;
+  /* A range, not a value: one variable file serves every weight in it. */
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('/fonts/cormorant-garamond-variable.woff2') format('woff2-variations');
+}
+
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('/fonts/lato-300.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/lato-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/lato-700.woff2') format('woff2');
+}

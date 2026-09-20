@@ -1,0 +1,55 @@
+/**
+ * The admin, in the site's palette.
+ *
+ * Payload exposes its theme as CSS variables, so this is a remap rather than a
+ * set of overrides fighting its stylesheet. The values are the site's tokens,
+ * restated as literals because this file is outside the Tailwind @theme layer
+ * and cannot read them: the admin's stylesheet is Payload's, loaded on its own
+ * routes, and nothing links the two cascades.
+ *
+ * That restatement is a real duplication, and it will drift if the palette
+ * changes. It is accepted because the alternative — generating this file from
+ * the tokens at build time — is machinery for one file that changes roughly
+ * never. If the palette moves, this file moves with it by hand. The ESLint
+ * no-hex rule does not catch it, since that rule covers .ts and .tsx only.
+ *
+ * Only the neutral ramp and the accent are remapped. Payload's spacing, type
+ * scale and component structure are left alone: this is a tool Alex uses, not a
+ * surface anyone else sees, and restyling it past recognition makes its own
+ * documentation harder to follow.
+ */
+:root {
+  /* The warm neutral ramp, lightest to darkest. Payload reads these for every
+   * surface, border and text colour in the admin. */
+  --theme-elevation-0: #ffffff;
+  --theme-elevation-50: #fbf9f5;
+  --theme-elevation-100: #f2ede4;
+  --theme-elevation-150: #ebe4d9;
+  --theme-elevation-200: #e8e0d3;
+  --theme-elevation-250: #ded4c4;
+  --theme-elevation-300: #d8cebd;
+  --theme-elevation-400: #b9ac97;
+  --theme-elevation-500: #8d8375;
+  --theme-elevation-600: #5c554b;
+  --theme-elevation-700: #3a352e;
+  --theme-elevation-800: #2f2b25;
+  --theme-elevation-900: #26231e;
+  --theme-elevation-1000: #1a1815;
+
+  --theme-bg: #fbf9f5;
+  --theme-input-bg: #ffffff;
+  --theme-text: #26231e;
+
+  /* The gold, at the darkened text weight rather than the ornament one. Buttons
+   * and links in the admin are text on a light ground and need the 4.5:1
+   * version; see tokens.css. */
+  --theme-success-500: #3f6228;
+  --theme-error-500: #8c3a30;
+  --theme-warning-500: #8a6d1f;
+}
+
+/* The status column on the memories list, so the queue can be read at a glance
+ * rather than by opening each row. */
+.row-label--pending {
+  color: #8a6d1f;
+}

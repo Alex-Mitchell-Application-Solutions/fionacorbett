@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+.github
+test-results
+playwright-report
+coverage
+.local-files
+.DS_Store
+*.tsbuildinfo

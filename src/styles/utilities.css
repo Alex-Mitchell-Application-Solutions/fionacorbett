@@ -1,0 +1,218 @@
+/**
+ * Custom utilities for values Tailwind has no namespace for.
+ *
+ * These exist so feature code never reaches for an arbitrary value. Section
+ * rhythm and page gutters appear on nearly every layout, and writing
+ * `px-(--spacing-gutter)` at each call site is exactly the drift the tokens are
+ * meant to prevent.
+ */
+
+@utility gutter {
+  padding-inline: var(--spacing-gutter);
+
+  @media (width >= 48rem) {
+    padding-inline: var(--spacing-gutter-lg);
+  }
+}
+
+@utility section-y {
+  padding-block: var(--spacing-section);
+
+  @media (width >= 48rem) {
+    padding-block: var(--spacing-section-lg);
+  }
+}
+
+/*
+ * The page's own horizontal axis.
+ *
+ * `gutter` pads from the viewport edge, which matches the page's axis only while
+ * the container is still growing. This one is the axis itself — the value the
+ * centred container arrives at — so a full-bleed band lines up with the header
+ * at every width rather than only at the width the container stops at.
+ */
+@utility page-inset {
+  padding-inline: var(--spacing-page-inset);
+
+  @media (width >= 64rem) {
+    padding-inline: var(--spacing-page-inset-lg);
+  }
+}
+
+/* The serif, capitalised. Bundling the casing, tracking and family together
+ * stops a heading taking the face without the case that goes with it. */
+@utility display-face {
+  font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
+  text-transform: uppercase;
+}
+
+/* The same serif, as authored.
+ *
+ * A second bundled utility rather than something that unsets the casing above,
+ * because the casing there is the h2 treatment rather than a default to
+ * override. The site uses both: h1 as written, h2 and the eyebrows capitalised. */
+@utility title-face {
+  font-family: var(--font-title);
+  letter-spacing: var(--tracking-display);
+}
+
+/* Everything about an eyebrow except its size, which the Eyebrow primitive
+ * passes as a class. Bundling the size here too would mean two font-size
+ * utilities in the same layer whenever one was overridden, and stylesheet order
+ * rather than the call site would decide which won. */
+@utility eyebrow-face {
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+}
+
+/*
+ * Rich text from the CMS, and guest-written memories.
+ *
+ * The shape of the output is set here once rather than being guessable per
+ * block. This matters more here than on most sites: a memory's body is written
+ * by whoever was sent the link, in whatever they had to hand, and the site has
+ * to set it well without anyone styling it.
+ */
+@utility prose-body {
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+
+  & p {
+    margin-block-end: 1em;
+  }
+
+  & p:last-child {
+    margin-block-end: 0;
+  }
+
+  & a {
+    color: var(--color-text);
+    text-decoration: underline;
+  }
+
+  & strong {
+    color: var(--color-text);
+    font-weight: 700;
+  }
+
+  & em {
+    font-style: italic;
+  }
+
+  & ul,
+  & ol {
+    margin-block-end: 1em;
+    padding-inline-start: 1.25em;
+  }
+
+  & li {
+    margin-block-end: 0.35em;
+  }
+}
+
+/*
+ * Rich text set as a lead paragraph.
+ *
+ * A companion to `prose-body` rather than a `text-*` class beside it: that
+ * utility sets declarations on the element and on its children, so a size class
+ * alongside it would win on the element and lose on the children, and the copy
+ * would come out at two sizes.
+ *
+ * Only the size and its leading. A lead paragraph is body copy set larger, not a
+ * different kind of text.
+ */
+@utility prose-lead {
+  font-size: var(--text-lead);
+  line-height: var(--leading-relaxed);
+}
+
+/*
+ * The prose colours, inverted for copy drawn over a photograph.
+ *
+ * A companion for the same reason, and with the same hazard: `prose-body` sets a
+ * colour on the element and on its links and strongs, so a colour class beside
+ * it would win on the element and lose on the children, and the copy would come
+ * out two colours. Applied after `prose-body`, so the declarations it needs to
+ * beat are the ones it restates.
+ */
+@utility prose-inverse {
+  color: var(--color-text-inverse);
+
+  & a {
+    color: var(--color-text-inverse);
+  }
+
+  & strong {
+    color: var(--color-text-inverse);
+  }
+}
+
+/*
+ * The gallery track.
+ *
+ * A scroll-snap row, not a transformed strip. The browser owns the scrolling, so
+ * a swipe, a trackpad, the keyboard and the arrow buttons all drive the same
+ * mechanism and the arrows only say how far. `scroll-behavior` is smooth here
+ * and already forced to auto under prefers-reduced-motion by base.css, which is
+ * why the buttons pass no behaviour of their own.
+ */
+@utility gallery-track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  /* The page's gutter, so the first card lines up with the heading above it
+   * while the row still runs to the edge of the viewport. */
+  scroll-padding-inline: var(--spacing-gutter);
+  /* Firefox and the standard property. This is the only horizontal scroller on
+   * the page and a permanent bar under it reads as a rendering fault. */
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  @media (width >= 48rem) {
+    scroll-padding-inline: var(--spacing-gutter-lg);
+  }
+}
+
+@utility gallery-slide {
+  scroll-snap-align: start;
+}
+
+/* Tailwind v4 has no theme namespace for z-index, transition duration or
+ * opacity, so --z-*, --duration-* and --opacity-* generate no utilities on their
+ * own. Declaring them here keeps the tokens as the single source of truth and
+ * makes the classes real. Without this they compile to nothing, silently, and
+ * the first symptom is a lightbox rendering behind the header. */
+@utility z-sticky {
+  z-index: var(--z-sticky);
+}
+@utility z-header {
+  z-index: var(--z-header);
+}
+@utility z-drawer {
+  z-index: var(--z-drawer);
+}
+@utility z-lightbox {
+  z-index: var(--z-lightbox);
+}
+@utility duration-fast {
+  transition-duration: var(--duration-fast);
+}
+@utility duration-base {
+  transition-duration: var(--duration-base);
+}
+@utility duration-slow {
+  transition-duration: var(--duration-slow);
+}
+@utility duration-plate {
+  transition-duration: var(--duration-plate);
+}
+@utility opacity-dimmed {
+  opacity: var(--opacity-dimmed);
+}

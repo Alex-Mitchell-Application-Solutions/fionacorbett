@@ -1,0 +1,129 @@
+# The quality gate, mirrored in CI.
+#
+# Two jobs, and the second one exists because a Dockerfile regression that only
+# shows up on deploy is the most expensive kind: it fails after review, on the
+# platform, with the site down or a release blocked.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: fionacorbett
+          POSTGRES_PASSWORD: fionacorbett
+          POSTGRES_DB: fionacorbett
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U fionacorbett"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # The build prerenders every public page, and every one reads site
+      # settings, so it needs a real database. This one is empty and migrated
+      # from scratch, which also makes the migration itself part of the gate:
+      # a migration that does not apply to a clean database fails here.
+      DATABASE_URL: postgres://fionacorbett:fionacorbett@localhost:5432/fionacorbett
+      PAYLOAD_SECRET: ci-only-secret-not-used-anywhere-real-0000
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      SITE_ENV: development
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+        with:
+          # Pinned. `package.json` names the same version; a mismatch here
+          # resolves a different tree from the one the lockfile describes.
+          version: 11.5.2
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Apply migrations to a clean database
+        run: pnpm run migrate
+
+      - name: Quality gate
+        run: pnpm run ci:quality
+
+      - name: Fail if a migration was not committed
+        # Payload writes payload-types.ts from the config. If the config changed
+        # and the types were not regenerated, the committed types are stale and
+        # the next person to run generate:types gets a diff they did not make.
+        run: |
+          pnpm run generate:types
+          git diff --exit-code src/payload-types.ts
+
+  container:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: fionacorbett
+          POSTGRES_PASSWORD: fionacorbett
+          POSTGRES_DB: fionacorbett
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U fionacorbett"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build the image
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_SITE_URL=http://localhost:3000 \
+            --build-arg SITE_ENV=preview \
+            --build-arg PAYLOAD_SECRET=ci-only-secret-not-used-anywhere-real-0000 \
+            --build-arg DATABASE_URL=postgres://fionacorbett:fionacorbett@172.17.0.1:5432/fionacorbett \
+            -t fionacorbett:ci .
+
+      - name: Boot it and curl the health path
+        # The thing this actually proves is that the image starts as a non-root
+        # user with the files it needs. A build that succeeds and a container
+        # that cannot boot are different failures.
+        run: |
+          docker run -d --name ci-site -p 3000:3000 \
+            -e DATABASE_URL=postgres://fionacorbett:fionacorbett@172.17.0.1:5432/fionacorbett \
+            -e PAYLOAD_SECRET=ci-only-secret-not-used-anywhere-real-0000 \
+            -e NEXT_PUBLIC_SITE_URL=http://localhost:3000 \
+            -e SITE_ENV=preview \
+            fionacorbett:ci
+          for i in $(seq 1 30); do
+            if curl -fs http://localhost:3000/health > /dev/null; then
+              echo "healthy after ${i}s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "never became healthy; container log follows"
+          docker logs ci-site
+          exit 1
+
+      - name: Confirm the release command runs in the image
+        # The pre-deploy command Railway runs. It has failed silently before on
+        # a sibling project, so it is exercised here rather than discovered on
+        # a deploy.
+        run: |
+          docker exec \
+            -e DATABASE_URL=postgres://fionacorbett:fionacorbett@172.17.0.1:5432/fionacorbett \
+            -e PAYLOAD_SECRET=ci-only-secret-not-used-anywhere-real-0000 \
+            ci-site node_modules/.bin/payload migrate
