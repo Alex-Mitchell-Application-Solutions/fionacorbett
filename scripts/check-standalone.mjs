@@ -15,7 +15,20 @@
  */
 import { readFileSync, existsSync } from 'node:fs'
 
-const PAGE = '.next/server/app/share-a-memory.html'
+/**
+ * Every page under /share-a-memory, not just the form.
+ *
+ * The three outcome pages are where a no-JS submission lands, so they are part
+ * of the same shared link and must link nowhere into the unfinished site
+ * either. They were added after this check existed and would not have been
+ * covered by it.
+ */
+const PAGES = [
+  '.next/server/app/share-a-memory.html',
+  '.next/server/app/share-a-memory/thank-you.html',
+  '.next/server/app/share-a-memory/check.html',
+  '.next/server/app/share-a-memory/not-sent.html',
+]
 
 /**
  * Fragments are fine: they stay on the page, and the skip link needs one.
@@ -23,46 +36,63 @@ const PAGE = '.next/server/app/share-a-memory.html'
  */
 const ALLOWED = (href) => href.startsWith('#')
 
-if (!existsSync(PAGE)) {
-  console.error(
-    `check-standalone: ${PAGE} not found. This runs after \`next build\` — if the\n` +
-      'route was renamed or moved, update this script rather than deleting it.',
-  )
-  process.exit(1)
+let checked = 0
+const offenders = []
+
+for (const page of PAGES) {
+  if (!existsSync(page)) {
+    console.error(
+      `check-standalone: ${page} not found. This runs after \`next build\` — if the\n` +
+        'route was renamed or moved, update this script rather than deleting it.',
+    )
+    process.exit(1)
+  }
+
+  const html = readFileSync(page, 'utf8')
+  const hrefs = [...html.matchAll(/href="([^"]*)"/g)].map((m) => m[1])
+  checked += hrefs.length
+
+  for (const href of hrefs) {
+    if (!isOffender(href)) continue
+    offenders.push(`${href}   (in ${page.replace('.next/server/app/', '/')})`)
+  }
 }
 
-const html = readFileSync(PAGE, 'utf8')
-const hrefs = [...html.matchAll(/href="([^"]*)"/g)].map((m) => m[1])
-
-const offenders = hrefs.filter((href) => {
-  if (ALLOWED(href)) return false
-  // Absolute URLs to somewhere else entirely are not this rule's business — the
-  // Turnstile script tag and any future external reference are fine.
-  if (/^https?:\/\//.test(href)) {
-    try {
-      const url = new URL(href)
-      const site = process.env.NEXT_PUBLIC_SITE_URL
-      // An absolute URL pointing back at our own origin is still a way off the
-      // page, and is exactly what a hand-written full URL would look like.
-      return site ? url.origin === new URL(site).origin : false
-    } catch {
-      return false
+function isOffender(href) {
+  {
+    if (ALLOWED(href)) return false
+    // Absolute URLs to somewhere else entirely are not this rule's business — the
+    // Turnstile script tag and any future external reference are fine.
+    if (/^https?:\/\//.test(href)) {
+      try {
+        const url = new URL(href)
+        const site = process.env.NEXT_PUBLIC_SITE_URL
+        // An absolute URL pointing back at our own origin is still a way off the
+        // page, and is exactly what a hand-written full URL would look like.
+        return site ? url.origin === new URL(site).origin : false
+      } catch {
+        return false
+      }
     }
+    // Stylesheets and fonts are hrefs too, and they are not navigation.
+    if (/\.(css|woff2?|ico|png|jpg|svg)$/.test(href)) return false
+    if (href.startsWith('/_next/')) return false
+    // Links between the share page and its own outcome pages stay inside the
+    // shared link, so they are not a way off it.
+    if (href === '/share-a-memory' || href.startsWith('/share-a-memory/')) return false
+    return true
   }
-  // Stylesheets and fonts are hrefs too, and they are not navigation.
-  if (/\.(css|woff2?|ico|png|jpg|svg)$/.test(href)) return false
-  if (href.startsWith('/_next/')) return false
-  return true
-})
+}
 
 if (offenders.length > 0) {
   console.error('check-standalone: /share-a-memory must not link into the rest of the site.')
-  console.error('This page is shared on its own while the site is unfinished.\n')
-  for (const href of [...new Set(offenders)]) console.error(`  ${href}`)
+  console.error('These pages are shared on their own while the site is unfinished.\n')
+  for (const entry of [...new Set(offenders)]) console.error(`  ${entry}`)
   console.error('\nSee src/components/layout/StandaloneFrame.tsx.')
   process.exit(1)
 }
 
 console.log(
-  `check-standalone: /share-a-memory links nowhere off the page (${hrefs.length} hrefs checked).`,
+  `check-standalone: ${PAGES.length} share pages link nowhere off themselves ` +
+    `(${checked} hrefs checked).`,
 )

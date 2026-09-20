@@ -55,6 +55,47 @@ import { clientIp, rateLimit } from '@/lib/rate-limit'
 export const dynamic = 'force-dynamic'
 
 /**
+ * Two kinds of caller, and the difference is not cosmetic.
+ *
+ * The enhanced form sends `Accept: application/json` and reads the answer. The
+ * form without JavaScript posts natively and must be answered with a page,
+ * because there is nothing on the other end to interpret a JSON body — a
+ * browser would simply display it.
+ *
+ * Discriminated on `Accept` rather than on `Content-Type`, because both callers
+ * send multipart: one because the browser does, the other because the form
+ * carries files.
+ */
+type Reply = {
+  accepted: () => Response
+  invalid: (fields: MemoryFieldErrors) => Response
+  failed: (message: string, status: number) => Response
+}
+
+const see = (path: string): Response =>
+  new Response(null, { status: 303, headers: { location: path } })
+
+const nativeReply: Reply = {
+  accepted: () => see('/share-a-memory/thank-you'),
+  // No field names in the URL: they would sit in access logs beside an IP, and
+  // the page cannot show them in place anyway without the values to go with
+  // them. It tells the reader to go back, where the browser restores what they
+  // typed.
+  invalid: () => see('/share-a-memory/check'),
+  failed: () => see('/share-a-memory/not-sent'),
+}
+
+const jsonReply: Reply = {
+  accepted: () => Response.json({ ok: true }, { status: 200 }),
+  invalid: (fields) => Response.json({ ok: false, fields }, { status: 400 }),
+  failed: (message, status) => Response.json({ ok: false, message }, { status }),
+}
+
+function wantsJson(request: Request): boolean {
+  return (request.headers.get('accept') ?? '').includes('application/json')
+}
+
+/**
  * What a bot sees. Identical to success, deliberately.
  *
  * A function, not a shared constant, and that distinction is not style. A
@@ -67,12 +108,8 @@ export const dynamic = 'force-dynamic'
  * have shown up in a unit test that builds one response per case, and in
  * production it would have looked like an intermittent network fault.
  */
-function silentOk(): Response {
-  return Response.json({ ok: true }, { status: 200 })
-}
-
-function invalid(fields: MemoryFieldErrors): Response {
-  return Response.json({ ok: false, fields }, { status: 400 })
+function silentOk(reply: Reply): Response {
+  return reply.accepted()
 }
 
 /**
@@ -87,6 +124,7 @@ function logRejection(layer: string, detail?: string): void {
 }
 
 export async function POST(request: Request): Promise<Response> {
+  const reply = wantsJson(request) ? jsonReply : nativeReply
   const ip = clientIp(request.headers)
 
   // 1. Rate limit.
@@ -95,10 +133,7 @@ export async function POST(request: Request): Promise<Response> {
     // 429 rather than a silent 200: this one a real person can hit, by sending
     // several memories in an evening, and they deserve to be told to wait
     // rather than to watch the last one vanish.
-    return Response.json(
-      { ok: false, message: 'That is a few in quick succession. Please try again shortly.' },
-      { status: 429 },
-    )
+    return reply.failed('That is a few in quick succession. Please try again shortly.', 429)
   }
 
   let form: FormData
@@ -106,7 +141,7 @@ export async function POST(request: Request): Promise<Response> {
     form = await request.formData()
   } catch {
     logRejection('malformed-body')
-    return silentOk()
+    return silentOk(reply)
   }
 
   // 2. Honeypot. Named to look worth filling in; positioned off-screen and
@@ -114,14 +149,14 @@ export async function POST(request: Request): Promise<Response> {
   const honeypot = form.get('website')
   if (typeof honeypot === 'string' && honeypot.trim().length > 0) {
     logRejection('honeypot')
-    return silentOk()
+    return silentOk(reply)
   }
 
   // 3. Dwell token.
   const token = form.get('dwell')
   if (typeof token !== 'string') {
     logRejection('dwell', 'missing')
-    return silentOk()
+    return silentOk(reply)
   }
   const dwell = verifyDwellToken(token)
   if (dwell !== 'valid') {
@@ -131,16 +166,12 @@ export async function POST(request: Request): Promise<Response> {
     // rather than a silent success. The form refetches a token and lets them
     // send again, so nothing they wrote is lost.
     if (dwell === 'expired') {
-      return Response.json(
-        {
-          ok: false,
-          expired: true,
-          message: 'This form has been open a while. Please send it again — nothing has been lost.',
-        },
-        { status: 409 },
+      return reply.failed(
+        'This form has been open a while. Please send it again — nothing has been lost.',
+        409,
       )
     }
-    return silentOk()
+    return silentOk(reply)
   }
 
   // 4. Schema. The same one the form validated against.
@@ -154,7 +185,7 @@ export async function POST(request: Request): Promise<Response> {
 
   if (!parsed.success) {
     logRejection('schema')
-    return invalid(toFieldErrors(parsed.error))
+    return reply.invalid(toFieldErrors(parsed.error))
   }
 
   // 5. Photographs. A real person reaches every one of these by accident, so
@@ -167,12 +198,12 @@ export async function POST(request: Request): Promise<Response> {
   const photos = form.getAll('photos').filter(isAttachedPhoto)
 
   if (photos.length > MAX_MEMORY_PHOTOS) {
-    return invalid({ photos: `Please attach no more than ${MAX_MEMORY_PHOTOS} photographs.` })
+    return reply.invalid({ photos: `Please attach no more than ${MAX_MEMORY_PHOTOS} photographs.` })
   }
 
   for (const photo of photos) {
     if (photo.size > MAX_MEMORY_PHOTO_BYTES) {
-      return invalid({
+      return reply.invalid({
         photos: `One of those is larger than ${formatMegabytes(MAX_MEMORY_PHOTO_BYTES)}. Please send a smaller version.`,
       })
     }
@@ -184,7 +215,7 @@ export async function POST(request: Request): Promise<Response> {
         photo.type as (typeof ACCEPTED_MEMORY_PHOTO_TYPES)[number],
       )
     ) {
-      return invalid({ photos: 'Photographs only, please — JPEG, PNG, WebP or HEIC.' })
+      return reply.invalid({ photos: 'Photographs only, please — JPEG, PNG, WebP or HEIC.' })
     }
   }
 
@@ -236,14 +267,8 @@ export async function POST(request: Request): Promise<Response> {
     // Generic to the caller, detail to the logs, and never the submitted
     // content in either.
     console.error('[submit-memory] write failed', error instanceof Error ? error.message : error)
-    return Response.json(
-      {
-        ok: false,
-        message: 'Something went wrong saving that. Please try again in a moment.',
-      },
-      { status: 500 },
-    )
+    return reply.failed('Something went wrong saving that. Please try again in a moment.', 500)
   }
 
-  return Response.json({ ok: true }, { status: 200 })
+  return reply.accepted()
 }

@@ -23,15 +23,30 @@ import {
 /**
  * The memory form.
  *
- * A client component, and the only one on the site. Everything else is server
- * rendered; this needs state for the dwell token, the field errors and the
- * success view.
+ * **It works with no JavaScript at all, and that is the point of its shape.**
  *
- * It is a real <form> with real inputs, posting FormData. That means the browser
- * does the file picking, the required-field focus and the submit, and the
- * JavaScript only enhances it. The one thing that genuinely needs script is the
- * dwell token — which is a bot check, so a submission without it being fetched
- * is one the server would reject anyway.
+ * The `<form>` has a real `action`, `method` and `encType`, so a browser that
+ * runs none of this still posts to `/submit-memory` and is answered with a
+ * redirect. The client code below is an enhancement: it validates before the
+ * round trip, shows field errors in place, and swaps in a thank-you without a
+ * navigation.
+ *
+ * This was not the original shape, and the difference mattered. The form used to
+ * rely entirely on `onSubmit`, with no action — so any time hydration did not
+ * happen, the browser fell back to its default, which is a GET to the current
+ * URL. Every field ended up in the address bar, nothing was stored, and the page
+ * appeared to simply reload. A dead dev server did it; so would a slow phone
+ * where someone taps before the bundle lands, a bundle blocked by an extension,
+ * or any error thrown earlier in the tree.
+ *
+ * A form whose only submit path is JavaScript has a single point of failure
+ * between a person's memory of Fiona and the database. This one does not.
+ * Modelled on luxury-gardens' consultation form, which is built the same way for
+ * the same reason.
+ *
+ * The dwell token follows from that: one is rendered into the HTML so a no-JS
+ * post carries a valid one, and the client replaces it with a fresher one on
+ * mount. See the `dwellToken` prop and the effect below.
  *
  * There is no CAPTCHA. Turnstile was here and was removed; the reasoning is on
  * the endpoint, and the short version is that a moderation queue makes it
@@ -41,19 +56,47 @@ import {
  * is doing a favour, possibly on a phone, possibly at seventy. Every message is
  * written to be read by them and not by a developer.
  */
-export function MemoryForm({ thanksMessage }: { thanksMessage: string }) {
-  const [dwell, setDwell] = useState<string | null>(null)
+export function MemoryForm({
+  thanksMessage,
+  dwellToken,
+}: {
+  thanksMessage: string
+  /**
+   * Minted on the server and rendered into a hidden input, so the form without
+   * JavaScript posts a valid token.
+   *
+   * The page revalidates hourly to keep this fresh; the token's own window is
+   * six hours, so a baked one is never close to expiring. It is shared by
+   * everyone who loaded the page in that hour, which is weaker than a
+   * per-visitor token — which is exactly why the client fetches its own and
+   * overwrites this one whenever it can.
+   */
+  dwellToken: string
+}) {
   const [fieldErrors, setFieldErrors] = useState<MemoryFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [state, setState] = useState<'editing' | 'sending' | 'sent'>('editing')
   const thanksRef = useRef<HTMLHeadingElement>(null)
+  /**
+   * The hidden token input, written to directly rather than held in state.
+   *
+   * It has to be a real input so the no-JS post carries it, and an uncontrolled
+   * one so the server-rendered value survives when no script runs. Driving it
+   * from state would mean React owning a value the form must have before React
+   * exists.
+   */
+  const dwellRef = useRef<HTMLInputElement>(null)
 
   /**
-   * Fetch a token on mount, and again after a successful send.
+   * Replace the baked-in token with a fresh, per-visitor one.
    *
-   * `no-store` on both sides: the route sets it and this asks for it, because a
-   * token served from a cache is the same timestamp for everyone who opens the
-   * form.
+   * Best-effort on purpose. If this fails — offline, blocked, server restarting
+   * — the server-rendered token is still in the input and the form still works.
+   * That is the whole reason it is written into the DOM rather than held in
+   * state: the fallback has to survive this never running.
+   *
+   * `no-store` on both sides, because a token served from a cache is the same
+   * timestamp for everyone who opened the form.
    */
   useEffect(() => {
     let cancelled = false
@@ -63,18 +106,16 @@ export function MemoryForm({ thanksMessage }: { thanksMessage: string }) {
         const response = await fetch('/memory-token', { cache: 'no-store' })
         if (!response.ok) return
         const data: unknown = await response.json()
-        if (cancelled) return
+        if (cancelled || !dwellRef.current) return
         if (
           typeof data === 'object' &&
           data !== null &&
           typeof (data as { token?: unknown }).token === 'string'
         ) {
-          setDwell((data as { token: string }).token)
+          dwellRef.current.value = (data as { token: string }).token
         }
       } catch {
-        // Swallowed on purpose. A failed mint leaves the token null, the submit
-        // below tells the person to reload, and there is nothing useful to say
-        // about it at this moment.
+        // Swallowed deliberately. The baked token remains and is valid.
       }
     }
 
@@ -173,17 +214,17 @@ export function MemoryForm({ thanksMessage }: { thanksMessage: string }) {
       return
     }
 
-    if (!dwell) {
-      setFormError('Please reload the page and try again — something did not load properly.')
-      return
-    }
-
     setFieldErrors({})
     setState('sending')
-    data.set('dwell', dwell)
 
     try {
-      const response = await fetch('/submit-memory', { method: 'POST', body: data })
+      const response = await fetch('/submit-memory', {
+        method: 'POST',
+        body: data,
+        // What tells the endpoint to answer with JSON rather than a redirect.
+        // A native post sends no such header and gets a 303 to a real page.
+        headers: { accept: 'application/json' },
+      })
       const result: unknown = await response.json()
       const payload = (typeof result === 'object' && result !== null ? result : {}) as {
         ok?: boolean
@@ -200,9 +241,6 @@ export function MemoryForm({ thanksMessage }: { thanksMessage: string }) {
 
       setState('editing')
       if (payload.fields) setFieldErrors(payload.fields)
-      // An expired token is recoverable: the effect above mints a fresh one and
-      // everything they typed is still on screen, so sending again works.
-      if (payload.expired) setDwell(null)
       setFormError(payload.message ?? 'That did not send. Please try again.')
     } catch {
       setState('editing')
@@ -211,7 +249,26 @@ export function MemoryForm({ thanksMessage }: { thanksMessage: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="max-w-measure">
+    <form
+      /*
+       * A real action, method and encType, so this posts without JavaScript.
+       * `onSubmit` calls preventDefault and takes over when it can; when it
+       * cannot, the browser does exactly what these three attributes say.
+       *
+       * encType is not optional here — the default is urlencoded, which cannot
+       * carry a file, so photographs would silently not be sent.
+       */
+      action="/submit-memory"
+      method="post"
+      encType="multipart/form-data"
+      onSubmit={handleSubmit}
+      noValidate
+      className="max-w-measure"
+    >
+      {/* Rendered by the server so a no-JS post carries a valid token; replaced
+          with a per-visitor one by the effect above when script runs. */}
+      <input ref={dwellRef} type="hidden" name="dwell" defaultValue={dwellToken} />
+
       {/*
         The honeypot.
 

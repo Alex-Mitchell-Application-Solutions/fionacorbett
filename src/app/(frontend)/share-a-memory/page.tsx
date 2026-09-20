@@ -4,6 +4,7 @@ import { PageHero } from '@/components/layout/PageHero'
 import { MemoryForm } from '@/components/memories/MemoryForm'
 import { Container } from '@/components/primitives/Container'
 import { getSiteSettings } from '@/lib/content'
+import { mintDwellToken } from '@/lib/dwell-token'
 
 export const metadata: Metadata = {
   title: 'Share a memory',
@@ -21,7 +22,19 @@ export const metadata: Metadata = {
  * in a forwarded message tells the person nothing about what they are opening.
  *
  * The page is static and the form is the only client component on the site.
+ *
+ * **Revalidated hourly, and that is the dwell token's doing.** A token is
+ * rendered into the form so that a browser running no JavaScript still posts a
+ * valid one; prerendered once at build time it would be months old and every
+ * no-JS submission would be rejected as expired. An hour against the token's
+ * six-hour window leaves plenty of room.
+ *
+ * The baked token is shared by everyone who loads the page within that hour,
+ * which is weaker than one per visitor. That is why the form fetches its own
+ * from /memory-token on mount and overwrites this one whenever script runs: the
+ * shared token is the floor, not the normal case.
  */
+export const revalidate = 3600
 export default async function ShareAMemoryPage() {
   const settings = await getSiteSettings()
 
@@ -30,7 +43,7 @@ export default async function ShareAMemoryPage() {
       <PageHero image={settings.shareHero} title={settings.shareTitle} lead={settings.shareLead} />
 
       <Container width="content" className="section-y">
-        <MemoryForm thanksMessage={settings.shareThanks} />
+        <MemoryForm thanksMessage={settings.shareThanks} dwellToken={mintDwellToken()} />
       </Container>
     </>
   )

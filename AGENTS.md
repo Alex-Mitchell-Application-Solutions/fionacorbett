@@ -102,6 +102,18 @@ it. Put it here.
   the running server, not assumed.
 - ✅ **The email address never leaves the admin**, enforced by field-level read
   access rather than by remembering to omit it.
+- ✅ **The form works with no JavaScript.** Real `action`, `method` and
+  `encType`, a dwell token rendered into the HTML, and three pages for the
+  native path to land on: `thank-you`, `check`, `not-sent`. The client code is an
+  enhancement over a form that already works.
+
+  This is not a nicety. The form previously had no `action` and relied entirely
+  on `onSubmit`, so whenever hydration did not happen the browser did its default
+  — a GET to the current URL — and every field ended up in the address bar with
+  nothing stored and no error. A dead dev server did it; so would a slow phone
+  where someone taps before the bundle lands. A form whose only submit path is
+  JavaScript has one point of failure between a person's memory of Fiona and the
+  database. Modelled on luxury-gardens' consultation form.
 - ✅ **Four layers in front of the write** — rate limit, honeypot, signed dwell
   token, shared Zod schema. See [The submission path](#the-submission-path).
 - ✅ **No CAPTCHA, deliberately.** Turnstile was built and removed on 20
@@ -356,6 +368,14 @@ Non-obvious things that matter, all of which have bitten somewhere:
   own origin.
 - **No PII in logs, ever.** Not names, not addresses, not memory bodies, and not
   filenames — a filename from a phone carries a date and sometimes a location.
+- **Two kinds of caller, discriminated on `Accept`.** The enhanced form sends
+  `application/json` and reads the answer; a native post gets a 303 to a page,
+  because a browser would otherwise just display the JSON. Not discriminated on
+  `Content-Type`: both send multipart, one because the browser does and one
+  because the form carries files.
+- **A page that renders a dwell token must revalidate.** `/share-a-memory` sets
+  `revalidate = 3600`. Prerendered once at build time the baked token would be
+  months old and every no-JS submission would be rejected as expired.
 - **An empty file input is not an empty submission.** Every browser sends a part
   for `<input type="file">` with nothing chosen: empty name, zero bytes, no
   content type. An `instanceof File` check treats it as a file, the mime check
