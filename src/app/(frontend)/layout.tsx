@@ -1,8 +1,6 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 
-import { SiteFooter } from '@/components/layout/SiteFooter'
-import { SiteHeader } from '@/components/layout/SiteHeader'
 import { isIndexable, siteUrl } from '@/lib/site-env'
 
 import '@/styles/globals.css'
@@ -11,6 +9,21 @@ const SITE_TITLE = 'Fiona Corbett'
 const SITE_DESCRIPTION =
   'Sixty years of Fiona, in photographs and in the words of the people who know her.'
 
+/**
+ * The document, and nothing else.
+ *
+ * The site's chrome — header, footer, skip link — deliberately does NOT live
+ * here. It lives in `(site)/layout.tsx`, which wraps the pages that are part of
+ * the site proper. `/share-a-memory` sits outside that group, because it is
+ * shared on its own while the rest of the site is still being built and must not
+ * link anywhere a recipient cannot go yet.
+ *
+ * Everything genuinely common to every page is here: the language, the font
+ * preload, the metadata base. Duplicating those into two root layouts would be
+ * the obvious alternative and is worse — the `metadataBase` in particular is the
+ * kind of thing that gets fixed in one copy and not the other, and the symptom
+ * is a shared link with a broken preview image.
+ */
 export function generateMetadata(): Metadata {
   return {
     // Every relative URL in the head — an uploaded share image is served from
@@ -25,7 +38,8 @@ export function generateMetadata(): Metadata {
     },
     description: SITE_DESCRIPTION,
     // Not indexed anywhere, production included. See isIndexable() for why that
-    // is a decision rather than an omission.
+    // is a decision rather than an omission. It matters more than usual while
+    // /share-a-memory is circulating ahead of the site being finished.
     robots: isIndexable() ? undefined : { index: false, follow: false },
     openGraph: {
       type: 'website',
@@ -62,20 +76,7 @@ export default function FrontendLayout({ children }: { children: ReactNode }) {
           crossOrigin="anonymous"
         />
       </head>
-      <body>
-        {/* Before the header, and the first thing a keyboard reaches. The
-            gallery is a long list of links, and without this every visit to a
-            second page means tabbing through all of them again. */}
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-header focus:rounded-sm focus:bg-surface-raised focus:px-4 focus:py-3 focus:text-text"
-        >
-          Skip to content
-        </a>
-        <SiteHeader />
-        <main id="main">{children}</main>
-        <SiteFooter />
-      </body>
+      <body>{children}</body>
     </html>
   )
 }

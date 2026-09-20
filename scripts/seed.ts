@@ -126,7 +126,7 @@ async function seed() {
       shareTitle: 'Share a memory',
       shareLead: 'Write down something you remember about Fiona. It does not need to be long.',
       shareThanks:
-        'Thank you — that has been sent to Alex, and it will appear on the site once he has had a look.',
+        'That has been saved, and Fiona will read it on her birthday. Alex looks at everything before it goes up, so it will not appear straight away — nothing has gone wrong if you do not see it yet.',
     },
   })
   payload.logger.info('Site settings written.')

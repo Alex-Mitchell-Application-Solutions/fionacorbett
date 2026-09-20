@@ -108,6 +108,26 @@ it. Put it here.
 - ✅ **Plain text, not rich text.** A rich text editor for a stranger means
   storing markup a stranger supplied, which means sanitising it correctly
   forever. Line breaks are all this needs.
+- ✅ **`/share-a-memory` is standalone and links nowhere.** It is being shared
+  ahead of the rest of the site, so it sits outside the `(site)` route group and
+  inherits no navigation: no header links, no footer call to action, no domain
+  named, and a wordmark that is a `<span>` rather than a link. The confirmation
+  after sending links nowhere either — "read the others" would hand someone a
+  half-built gallery at the exact moment they have just written something
+  personal. **Enforced by `pnpm run check:standalone`**, which greps the
+  prerendered HTML and fails the gate on any internal href; a comment cannot
+  catch a link arriving from a layout or a primitive's default.
+
+  **When the site is finished**, move the route into `(site)`, delete
+  `StandaloneFrame.tsx` and delete the check. It is deliberately not a feature
+  flag: a flag controlling whether a page leaks links to an unfinished site is a
+  flag that will one day be set wrong.
+
+- ✅ **A thank-you state that stands on its own.** Confirms it is saved, says it
+  is read before it goes up so nobody resends, and offers "write another" as a
+  button that resets the form in place. Focus moves to the heading, because the
+  form it replaced no longer exists. The wording is `shareThanks` in site
+  settings, editable without a deploy.
 - 🟡 **Notify Alex when a memory arrives.** Without it, approval depends on him
   remembering to check the admin, and the failure mode is someone's memory
   sitting unapproved through the party. 🧪 Vendor not chosen — see
@@ -119,6 +139,11 @@ it. Put it here.
 
 - ✅ **Four routes**: home, gallery, memories, share. Plus `/gallery/[id]`,
   `/design-system`, `/health` and the two endpoints.
+- ✅ **Two layouts, and the split is load-bearing.** `(frontend)/layout.tsx` is
+  the document — language, font preload, metadata base — and carries no chrome.
+  `(site)/layout.tsx` adds the header, footer and skip link. A page opts into the
+  navigation by being in the `(site)` group, so going standalone is a deliberate
+  placement rather than something a page can drift into.
 - ✅ **Every page opens on a full-bleed photograph** through one `PageHero`.
 - ✅ **Site settings as a global**, so every hero image and the two home-page
   link labels change without a deploy.
@@ -158,20 +183,22 @@ thing most likely to be late.
 ```
 src/
   app/
-    (frontend)/            the public site
-      page.tsx             home: hero, two doorways, featured strip
-      gallery/             the gallery and one route per photograph
-      memories/            approved memories
-      share-a-memory/      the submission form's page
+    (frontend)/            layout.tsx is the document only — no chrome
+      (site)/              everything that carries the navigation
+        layout.tsx         skip link, SiteHeader, main, SiteFooter
+        page.tsx           home: hero, two doorways, featured strip
+        gallery/           the gallery and one route per photograph
+        memories/          approved memories
+        design-system/     the showcase. noindex
+      share-a-memory/      OUTSIDE (site), on purpose. Links nowhere
       submit-memory/       POST endpoint — the only write path for a stranger
       memory-token/        mints the signed dwell token
-      design-system/       the showcase. noindex
       health/              liveness probe for the container and Railway
     (payload)/             admin and Payload's API. Mostly generated
   collections/             Payload schema and access control
   components/
     primitives/            Button, Heading, Text, Field, PayloadImage, …
-    layout/                SiteHeader, SiteFooter, PageHero
+    layout/                SiteHeader, SiteFooter, PageHero, StandaloneFrame
     gallery/ memories/     feature components
     showcase/              the showcase's own furniture
   globals/SiteSettings.ts  hero images and copy, editable without a deploy
@@ -456,7 +483,8 @@ tokens.
 All of these, every time:
 
 1. `pnpm run ci:quality` passes and **the real result is reported**, failures
-   included.
+   included. That now ends with `check:standalone`, so a link leaking onto
+   `/share-a-memory` fails the gate rather than reaching whoever was sent it.
 2. The narrowest viewport was opened before any wider one.
 3. Any new primitive is on `/design-system` with every variant, size and state.
 4. No new literal colours and no arbitrary-value utilities.

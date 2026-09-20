@@ -652,7 +652,7 @@ export interface SiteSetting {
    */
   shareLead?: string | null;
   /**
-   * Shown after someone sends a memory. Say that it is checked first, so nobody wonders why theirs has not appeared.
+   * Shown after someone sends a memory. Two things it has to do: confirm it is safely saved, and explain that it is checked first — otherwise people wonder why theirs has not appeared and send it again. Avoid pointing at the rest of the site while that is still being built.
    */
   shareThanks: string;
   updatedAt?: string | null;

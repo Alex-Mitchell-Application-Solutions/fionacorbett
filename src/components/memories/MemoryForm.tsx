@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/primitives/Button'
 import { Field } from '@/components/primitives/Field'
 import { Heading } from '@/components/primitives/Heading'
+import { Rule } from '@/components/primitives/Rule'
 import { Text } from '@/components/primitives/Text'
 import {
   MAX_MEMORY_PHOTOS,
@@ -94,19 +95,35 @@ export function MemoryForm({
 
   if (state === 'sent') {
     return (
+      /*
+       * The confirmation.
+       *
+       * It links nowhere, and that is deliberate rather than unfinished. This
+       * page is shared on its own while the rest of the site is being built, so
+       * "read the others" would send someone to a page that is not ready — and
+       * the moment just after someone has written something personal is the
+       * worst moment to hand them a half-finished site.
+       *
+       * "Write another" is a button, not a link: it resets the form in place.
+       * Several people do send more than one, and making them reload the page to
+       * do it is how the second one does not get written.
+       *
+       * The heading takes focus because the form it replaced is gone. Without
+       * that, a screen reader user is left on a submit button that no longer
+       * exists and has no idea whether anything happened.
+       */
       <div className="max-w-measure">
-        <Heading level={2} size={3} tabIndex={-1} ref={thanksRef}>
+        <Rule />
+        <Heading level={2} size={2} tabIndex={-1} ref={thanksRef} className="mt-6">
           Thank you
         </Heading>
         <Text size="lead" className="mt-5 whitespace-pre-line">
           {thanksMessage}
         </Text>
-        <div className="mt-8 flex flex-wrap gap-8">
-          <Button href="/memories" variant="link" size="md">
-            Read the others
-          </Button>
+        <Text className="mt-6">You can close this page now — there is nothing else to do.</Text>
+        <div className="mt-10">
           <Button
-            variant="link"
+            variant="secondary"
             size="md"
             onClick={() => {
               setFieldErrors({})
@@ -299,7 +316,7 @@ export function MemoryForm({
           {state === 'sending' ? 'Sending…' : 'Send it'}
         </Button>
         <Text size="sm" className="mt-4">
-          Alex reads everything before it goes on the site, so it will not appear straight away.
+          Alex reads everything before it goes up, so it will not appear straight away.
         </Text>
       </div>
     </form>
