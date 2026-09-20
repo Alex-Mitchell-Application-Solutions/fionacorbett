@@ -35,6 +35,11 @@ jobs:
       # settings, so it needs a real database. This one is empty and migrated
       # from scratch, which also makes the migration itself part of the gate:
       # a migration that does not apply to a clean database fails here.
+      #
+      # 5432 here and 5433 in compose.yaml, and the difference is deliberate —
+      # do not "fix" it. Locally 5433 avoids colliding with a developer's
+      # Postgres.app; a CI runner has no other Postgres, so the default port is
+      # correct and matches the service definition above.
       DATABASE_URL: postgres://fionacorbett:fionacorbett@localhost:5432/fionacorbett
       PAYLOAD_SECRET: ci-only-secret-not-used-anywhere-real-0000
       NEXT_PUBLIC_SITE_URL: http://localhost:3000

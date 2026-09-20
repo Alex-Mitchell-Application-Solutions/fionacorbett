@@ -36,6 +36,30 @@ in the repository looks like content but is not. They say PLACEHOLDER on them.
 | `pnpm run generate:types` | Regenerate `payload-types.ts`. CI fails if stale |
 | `pnpm run db:up` / `down` | Local Postgres                                   |
 
+## If it cannot reach the database
+
+**`role "fionacorbett" does not exist`** means something connected to the wrong
+Postgres. It is not a broken container.
+
+A native Postgres — Postgres.app, or a Homebrew one — binds `127.0.0.1` and
+`::1` explicitly, while Docker publishes on the wildcard. A specific loopback
+binding wins, so with both running, `localhost:5432` reaches the native server
+and never this project's container. That is why `compose.yaml` publishes on
+**5433**. Check what is where:
+
+```bash
+lsof -nP -iTCP:5432 -sTCP:LISTEN     # anything native on the default port
+docker compose ps                     # should show 127.0.0.1:5433->5432/tcp
+```
+
+**Running the app itself in Docker**, rather than on the host with `pnpm run
+dev`? Then `localhost` inside that container is the container, not your Mac.
+Point it at the host instead:
+
+```
+DATABASE_URL=postgres://fionacorbett:fionacorbett@host.docker.internal:5433/fionacorbett
+```
+
 ## Where to start
 
 - Anything visual → `src/styles/tokens.css`

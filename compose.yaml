@@ -10,7 +10,22 @@ services:
       POSTGRES_PASSWORD: fionacorbett
       POSTGRES_DB: fionacorbett
     ports:
-      - '5432:5432'
+      # 5433 on the host, not 5432, and bound to loopback rather than every
+      # interface. Both halves matter.
+      #
+      # **The port.** A native Postgres — Postgres.app, or a Homebrew one — binds
+      # 127.0.0.1 and ::1 explicitly, while Docker publishes on the wildcard. A
+      # specific loopback binding wins over the wildcard, so with both running,
+      # `localhost:5432` silently reaches the native server and never this
+      # container. It does not fail to connect; it connects to the wrong database
+      # and reports `role "fionacorbett" does not exist`, which reads like a
+      # broken container rather than a port collision. luxury-gardens uses 5433
+      # for the same reason.
+      #
+      # **The 127.0.0.1 prefix.** Without it Docker publishes on 0.0.0.0, and a
+      # development database with a password equal to its username is reachable
+      # by anything on the same café or office network.
+      - '127.0.0.1:5433:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
