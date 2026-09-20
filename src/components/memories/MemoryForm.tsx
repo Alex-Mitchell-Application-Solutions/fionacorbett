@@ -33,18 +33,15 @@ import {
  * dwell token — which is a bot check, so a submission without it being fetched
  * is one the server would reject anyway.
  *
+ * There is no CAPTCHA. Turnstile was here and was removed; the reasoning is on
+ * the endpoint, and the short version is that a moderation queue makes it
+ * unnecessary and its failure modes were silent.
+ *
  * The tone throughout is the point. Whoever is on this page was sent a link and
  * is doing a favour, possibly on a phone, possibly at seventy. Every message is
  * written to be read by them and not by a developer.
  */
-export function MemoryForm({
-  thanksMessage,
-  turnstileSiteKey,
-}: {
-  thanksMessage: string
-  /** Absent in development. The widget renders only when there is a key. */
-  turnstileSiteKey: string | null
-}) {
+export function MemoryForm({ thanksMessage }: { thanksMessage: string }) {
   const [dwell, setDwell] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<MemoryFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
@@ -296,13 +293,6 @@ export function MemoryForm({
           {(props) => <input {...props} type="email" autoComplete="email" />}
         </Field>
       </div>
-
-      {turnstileSiteKey ? (
-        <>
-          <div className="mt-8 cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="light" />
-          <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
-        </>
-      ) : null}
 
       {formError ? (
         <p

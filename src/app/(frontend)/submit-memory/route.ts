@@ -14,7 +14,6 @@ import {
   memorySubmissionSchema,
   toFieldErrors,
 } from '@/lib/memories/schema'
-import { verifyHuman } from '@/lib/memories/turnstile'
 import { clientIp, rateLimit } from '@/lib/rate-limit'
 
 /**
@@ -31,8 +30,19 @@ import { clientIp, rateLimit } from '@/lib/rate-limit'
  *   3. Signed dwell token HMAC(timestamp) minted at mount, verified here
  *   4. Zod validation     the same schema the form used
  *   5. Photo checks       count, size and exact mime type
- *   6. Human check        Turnstile. A network call, so it goes last
- *   7. Write              through the Local API, status pending
+ *   6. Write              through the Local API, status pending
+ *
+ * **There is no CAPTCHA, deliberately.** Turnstile was here and was removed on
+ * 20 September 2026, after it cost more than it protected: a single mistyped
+ * variable name silently discarded every submission, and the widget was one more
+ * thing to fail in front of people being asked to do a favour.
+ *
+ * What makes that affordable is the moderation queue. Nothing reaches the site
+ * without Alex approving it, so the worst a bot achieves is a row he deletes,
+ * not a public page. The layers above already stop automated posting, and this
+ * is a link shared with perhaps a hundred people rather than a public form
+ * anyone can find. If it is ever abused, the honest fix is a shared-store rate
+ * limit, not a challenge in front of a seventy-year-old on a phone.
  *
  * **Bot rejections return HTTP 200 `{ ok: true }`.** Telling a scraper which
  * layer caught it is free tuning information, and a human never trips these. The
@@ -178,48 +188,7 @@ export async function POST(request: Request): Promise<Response> {
     }
   }
 
-  // 6. Human check. Last, because it is the only layer that makes a network call.
-  const human = await verifyHuman(
-    typeof form.get('cf-turnstile-response') === 'string'
-      ? (form.get('cf-turnstile-response') as string)
-      : null,
-    ip,
-  )
-  /*
-   * Misconfiguration is not a bot, and must never be answered with a silent
-   * success.
-   *
-   * Only one of the two Turnstile keys being set makes every genuine submission
-   * look exactly like a bot: the widget cannot render without the site key, so
-   * no token is ever produced, so the check always fails. Reporting that as
-   * `{ok: true}` means every memory sent during the misconfiguration is thrown
-   * away while its author is told it arrived.
-   *
-   * So: a loud log, and an honest 500. The submitter is told to try again rather
-   * than being lied to, and the error names the fix.
-   */
-  if (human === 'misconfigured') {
-    console.error(
-      '[submit-memory] Turnstile is half-configured: TURNSTILE_SECRET_KEY and ' +
-        'NEXT_PUBLIC_TURNSTILE_SITE_KEY must both be set, or neither. ' +
-        'Refusing to accept submissions that would be silently discarded.',
-    )
-    return Response.json(
-      {
-        ok: false,
-        message:
-          'Something is wrong at our end, not yours. Please try again shortly — and if it keeps happening, let Alex know.',
-      },
-      { status: 500 },
-    )
-  }
-
-  if (human === 'failed') {
-    logRejection('human-check')
-    return silentOk()
-  }
-
-  // 7. Write. Photographs first, so a memory never references an upload that
+  // 6. Write. Photographs first, so a memory never references an upload that
   //    failed; an orphaned photo with no memory is tidier than a memory with a
   //    broken image on it.
   try {

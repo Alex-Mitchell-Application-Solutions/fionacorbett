@@ -59,17 +59,11 @@ export default defineRailway(() => {
       DATABASE_BUILD_URL: preserve(),
       PAYLOAD_SECRET: preserve(),
       NEXT_PUBLIC_SITE_URL: preserve(),
-      SITE_ENV: preserve(),
       S3_ACCESS_KEY_ID: preserve(),
       S3_SECRET_ACCESS_KEY: preserve(),
       S3_BUCKET: preserve(),
       S3_ENDPOINT: preserve(),
       S3_REGION: preserve(),
-      // The human check on the memory form. Production refuses submissions
-      // until both are set — see src/lib/memories/turnstile.ts — so these are
-      // required before the share link goes out, not before the site deploys.
-      TURNSTILE_SECRET_KEY: preserve(),
-      NEXT_PUBLIC_TURNSTILE_SITE_KEY: preserve(),
       // SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD are deliberately absent. They
       // are read by `pnpm run seed`, which is a local bootstrap for an empty
       // database and is never part of a deploy — nothing in the image or the

@@ -102,9 +102,14 @@ it. Put it here.
   the running server, not assumed.
 - ✅ **The email address never leaves the admin**, enforced by field-level read
   access rather than by remembering to omit it.
-- ✅ **Five layers in front of the write** — rate limit, honeypot, signed dwell
-  token, shared Zod schema, human check. See
-  [The submission path](#the-submission-path).
+- ✅ **Four layers in front of the write** — rate limit, honeypot, signed dwell
+  token, shared Zod schema. See [The submission path](#the-submission-path).
+- ✅ **No CAPTCHA, deliberately.** Turnstile was built and removed on 20
+  September 2026. It cost more than it protected: a single mistyped variable
+  name silently discarded every submission, and the widget was one more thing to
+  fail in front of people being asked to do a favour. The moderation queue is
+  what makes that affordable — nothing reaches the site without approval, so the
+  worst a bot achieves is a row Alex deletes.
 - ✅ **Plain text, not rich text.** A rich text editor for a stranger means
   storing markup a stranger supplied, which means sanitising it correctly
   forever. Line breaks are all this needs.
@@ -169,7 +174,7 @@ Locked. Revisited only if a dependency changes.
 7. ✅ Gallery, decade grouping, single-photograph route
 8. ✅ Memory submission path and the memories page
 9. 🟡 Real content — Fiona's photographs, real hero images, the real copy
-10. 🟡 Turnstile keys, domain, first deploy
+10. 🟡 Domain, and the first deploy
 11. 🧱 Pre-launch hardening (see below)
 
 Steps 1–8 are done and verified. **Step 9 is the long pole and it is not an
@@ -206,7 +211,7 @@ src/
     gallery.ts             decade grouping. The gallery's whole data model
     content.ts             every read the public pages make
     revalidate.ts          cache invalidation as Payload hooks
-    memories/              limits, schema, Turnstile
+    memories/              limits, shared Zod schema
     dwell-token.ts         HMAC'd timestamp
     rate-limit.ts          in-memory fixed window
     site-env.ts            what this instance is and what follows
@@ -228,23 +233,23 @@ scripts/seed.ts            bootstrap an empty database
 
 ## Tech stack
 
-| Concern         | Choice                                                            | Status         |
-| --------------- | ----------------------------------------------------------------- | -------------- |
-| Language        | TypeScript strict, `noUncheckedIndexedAccess`                     | ✅             |
-| Framework       | Next.js 16, App Router, Turbopack                                 | ✅             |
-| Rendering       | Static everywhere except the admin, the API and the two endpoints | ✅             |
-| CMS and data    | Payload 3.90.1 on Postgres                                        | ✅             |
-| Migrations      | Payload migrations, committed                                     | ✅             |
-| Media           | S3 in deployed environments, disk locally                         | ✅             |
-| Auth            | Payload's, for the admin only                                     | ✅             |
-| Styling         | Tailwind v4, token-first                                          | ✅             |
-| Validation      | Zod, one schema shared by client and server                       | ✅             |
-| Package manager | pnpm 11.5.2, pinned                                               | ✅             |
-| Tests           | Vitest                                                            | ✅             |
-| Deploy          | Railway, from a Dockerfile                                        | ✅             |
-| Human check     | Cloudflare Turnstile                                              | 🟡 keys needed |
-| Analytics       | None, deliberately                                                | ✅             |
-| Error tracking  | None yet                                                          | 🧱             |
+| Concern         | Choice                                                            | Status |
+| --------------- | ----------------------------------------------------------------- | ------ |
+| Language        | TypeScript strict, `noUncheckedIndexedAccess`                     | ✅     |
+| Framework       | Next.js 16, App Router, Turbopack                                 | ✅     |
+| Rendering       | Static everywhere except the admin, the API and the two endpoints | ✅     |
+| CMS and data    | Payload 3.90.1 on Postgres                                        | ✅     |
+| Migrations      | Payload migrations, committed                                     | ✅     |
+| Media           | S3 in deployed environments, disk locally                         | ✅     |
+| Auth            | Payload's, for the admin only                                     | ✅     |
+| Styling         | Tailwind v4, token-first                                          | ✅     |
+| Validation      | Zod, one schema shared by client and server                       | ✅     |
+| Package manager | pnpm 11.5.2, pinned                                               | ✅     |
+| Tests           | Vitest                                                            | ✅     |
+| Deploy          | Railway, from a Dockerfile                                        | ✅     |
+| Human check     | None. The moderation queue does this job                          | ✅     |
+| Analytics       | None, deliberately                                                | ✅     |
+| Error tracking  | None yet                                                          | 🧱     |
 
 ### Why Payload, and what would undo it
 
@@ -326,7 +331,6 @@ Cheapest first, so a bot costs as little as possible:
 | 3   | Dwell token   | HMAC'd timestamp: forged, replayed, too fast | silent 200            |
 | 4   | Zod schema    | the same one the form used                   | 400 with field errors |
 | 5   | Photo checks  | count, size, exact mime type                 | 400 with a message    |
-| 6   | Human check   | Turnstile                                    | silent 200            |
 
 Non-obvious things that matter, all of which have bitten somewhere:
 
@@ -347,9 +351,6 @@ Non-obvious things that matter, all of which have bitten somewhere:
 - **The share page is static, so the token cannot be baked in.** It would be
   identical for every visitor and stale within the hour. The form fetches one
   from a `no-store` endpoint on mount.
-- **Turnstile fails closed in production and is skipped in development.** A bot
-  check that quietly turns itself off when misconfigured is worse than none,
-  because it reports that it is protecting something.
 - **Mime types are checked against an exact list, never `image/*`.** That
   wildcard admits SVG, which is a document that can carry script, served from our
   own origin.
@@ -362,13 +363,10 @@ Non-obvious things that matter, all of which have bitten somewhere:
   only, please". `isAttachedPhoto` in `limits.ts` is the one predicate both sides
   use — the client had the filter and the server did not, which is exactly how
   this shipped.
-- **Turnstile's two keys are set together or not at all.** Only the secret being
-  set means the widget never renders, no token is ever produced, and every
-  genuine submission looks like a bot — answered with a silent 200 and thrown
-  away. `verifyHuman` returns `misconfigured` for that, checked before the token,
-  and the endpoint answers an honest 500. Caused here by a single mistyped name:
-  `PUBLIC_TURNSTILE_SITE_KEY` rather than `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, which
-  Next does not expose to the browser and does not warn about.
+- **A `NEXT_PUBLIC_` value must carry the prefix in full.** `PUBLIC_FOO` is not
+  exposed to the browser, reads as `undefined`, and nothing warns. That mistyped
+  prefix silently discarded every memory submitted while Turnstile was still in
+  place, which is a large part of why it is no longer in place.
 
 ---
 
@@ -531,7 +529,7 @@ written about her by people who expected an audience of her family.
 
 - **Collected:** what a submitter types, any photographs they attach, and their
   email address if they give one. Nothing else. No cookies beyond Payload's admin
-  session, no analytics, no third-party scripts except Turnstile on one page.
+  session, no analytics, and no third-party scripts at all.
 - **Where it goes:** Postgres and an S3 bucket, both on Railway, both private to
   this project. Nothing is sent anywhere else.
 - **Retention:** indefinite. It is a keepsake. There is no expiry and there
@@ -597,11 +595,6 @@ Everything assumed or undecided. Be specific about the file that carries it.
   matches luxury-gardens, but it needs an account, a verified domain and
   SPF/DKIM/DMARC. Nothing is wired yet; `src/app/(frontend)/submit-memory/route.ts`
   writes the memory and tells nobody.
-- 🧪 **Turnstile keys.** `TURNSTILE_SECRET_KEY` and
-  `NEXT_PUBLIC_TURNSTILE_SITE_KEY` are unset. **Production refuses every
-  submission until both exist** — `src/lib/memories/turnstile.ts`. This must be
-  done before the link is shared, and it is the single most likely thing to make
-  launch day go wrong.
 - 🧪 **The real copy.** `homeLead`, `shareLead` and `shareThanks` in
   `src/globals/SiteSettings.ts` carry placeholder wording that reads as
   placeholder. The share page's lead is the one that matters most — it is what a
@@ -617,6 +610,7 @@ Everything assumed or undecided. Be specific about the file that carries it.
 - 🧪 **Photograph provenance.** Some photographs will involve other people who
   are alive and did not ask to be on a website. No position has been taken on
   whether that matters here. It probably does for a handful of them.
+- ✅ ~~Turnstile keys~~ — removed entirely; there is no CAPTCHA.
 - ✅ ~~Domain~~ — fionacorbett.co.uk, purchased.
 - ✅ ~~Feature name~~ — "Memories", not "testimonials".
 - ✅ ~~Font licensing~~ — Cormorant Garamond and Lato, both SIL OFL 1.1,

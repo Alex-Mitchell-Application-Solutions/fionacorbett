@@ -35,15 +35,6 @@ COPY . .
 ARG NEXT_PUBLIC_SITE_URL
 ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
 
-# Read when /share-a-memory is prerendered. Optional: without it the form still
-# renders and production refuses to accept a submission, which is the rule for a
-# missing spam check. See src/lib/memories/turnstile.ts.
-ARG NEXT_PUBLIC_TURNSTILE_SITE_KEY
-ENV NEXT_PUBLIC_TURNSTILE_SITE_KEY=${NEXT_PUBLIC_TURNSTILE_SITE_KEY}
-
-ARG SITE_ENV
-ENV SITE_ENV=${SITE_ENV}
-
 # ---------------------------------------------------------------------------
 # The build reads the database, and that is deliberate.
 #

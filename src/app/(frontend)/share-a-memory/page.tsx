@@ -20,10 +20,7 @@ export const metadata: Metadata = {
  * loud and printing on a card; this is the canonical one, because a bare /share
  * in a forwarded message tells the person nothing about what they are opening.
  *
- * The page is static and the form is the only client component on the site. The
- * Turnstile site key is read here, on the server, and passed down: it is a
- * NEXT_PUBLIC value and therefore inlined at build time, which is why the
- * Dockerfile has to take it as a build argument as well as a runtime variable.
+ * The page is static and the form is the only client component on the site.
  */
 export default async function ShareAMemoryPage() {
   const settings = await getSiteSettings()
@@ -33,10 +30,7 @@ export default async function ShareAMemoryPage() {
       <PageHero image={settings.shareHero} title={settings.shareTitle} lead={settings.shareLead} />
 
       <Container width="content" className="section-y">
-        <MemoryForm
-          thanksMessage={settings.shareThanks}
-          turnstileSiteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? null}
-        />
+        <MemoryForm thanksMessage={settings.shareThanks} />
       </Container>
     </>
   )

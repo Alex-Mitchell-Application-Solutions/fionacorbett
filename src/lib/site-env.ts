@@ -1,21 +1,13 @@
 /**
- * What the running instance is, and what follows from it.
+ * Facts about the running instance that more than one place needs.
  *
- * Read from SITE_ENV rather than NODE_ENV. NODE_ENV is `production` in every
- * built deployment, including a preview, so a check written against it cannot
- * tell production from anything else — which is exactly the distinction both
- * callers here need.
+ * This module used to carry a SITE_ENV discriminator so the human check could be
+ * mandatory in production only. Turnstile is gone and nothing else asked the
+ * question, so the discriminator went with it rather than sitting here looking
+ * wired. If a genuine production-only behaviour appears, bring it back then —
+ * reading SITE_ENV rather than NODE_ENV, which is `production` in a preview
+ * deployment too and so cannot tell the two apart.
  */
-
-export type SiteEnv = 'development' | 'preview' | 'production'
-
-export function siteEnv(): SiteEnv {
-  const value = process.env.SITE_ENV
-  if (value === 'production' || value === 'preview' || value === 'development') return value
-  // Anything unset or unrecognised is treated as the least privileged. A typo in
-  // the variable must not be the thing that opens the site to crawlers.
-  return 'development'
-}
 
 /**
  * Whether search engines may index this instance.
@@ -37,19 +29,6 @@ export function siteEnv(): SiteEnv {
  */
 export function isIndexable(): boolean {
   return false
-}
-
-/**
- * Whether the human check is mandatory.
- *
- * True in production only. Locally and in preview the form works without
- * Turnstile keys, so a checkout runs with nothing but Postgres; in production a
- * missing key is refused rather than silently skipped, because a bot check that
- * quietly turns itself off when misconfigured is worse than none — it reports
- * that it is protecting something.
- */
-export function requiresHumanCheck(): boolean {
-  return siteEnv() === 'production'
 }
 
 /**
