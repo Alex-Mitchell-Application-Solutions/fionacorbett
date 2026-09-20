@@ -7,6 +7,7 @@ import {
   MAX_MEMORY_PHOTOS,
   MAX_MEMORY_PHOTO_BYTES,
   formatMegabytes,
+  isAttachedPhoto,
 } from '@/lib/memories/limits'
 import {
   type MemoryFieldErrors,
@@ -148,7 +149,12 @@ export async function POST(request: Request): Promise<Response> {
 
   // 5. Photographs. A real person reaches every one of these by accident, so
   //    they all return a message rather than a silent success.
-  const photos = form.getAll('photos').filter((entry): entry is File => entry instanceof File)
+  // isAttachedPhoto, not `instanceof File`. A file input with nothing chosen
+  // still sends a part — empty name, zero bytes, no content type — and treating
+  // that as a file fails the mime check below, so a submission with no
+  // photograph gets told "Photographs only, please". Shared with the client so
+  // the two cannot apply different rules; they already had.
+  const photos = form.getAll('photos').filter(isAttachedPhoto)
 
   if (photos.length > MAX_MEMORY_PHOTOS) {
     return invalid({ photos: `Please attach no more than ${MAX_MEMORY_PHOTOS} photographs.` })
@@ -179,6 +185,35 @@ export async function POST(request: Request): Promise<Response> {
       : null,
     ip,
   )
+  /*
+   * Misconfiguration is not a bot, and must never be answered with a silent
+   * success.
+   *
+   * Only one of the two Turnstile keys being set makes every genuine submission
+   * look exactly like a bot: the widget cannot render without the site key, so
+   * no token is ever produced, so the check always fails. Reporting that as
+   * `{ok: true}` means every memory sent during the misconfiguration is thrown
+   * away while its author is told it arrived.
+   *
+   * So: a loud log, and an honest 500. The submitter is told to try again rather
+   * than being lied to, and the error names the fix.
+   */
+  if (human === 'misconfigured') {
+    console.error(
+      '[submit-memory] Turnstile is half-configured: TURNSTILE_SECRET_KEY and ' +
+        'NEXT_PUBLIC_TURNSTILE_SITE_KEY must both be set, or neither. ' +
+        'Refusing to accept submissions that would be silently discarded.',
+    )
+    return Response.json(
+      {
+        ok: false,
+        message:
+          'Something is wrong at our end, not yours. Please try again shortly — and if it keeps happening, let Alex know.',
+      },
+      { status: 500 },
+    )
+  }
+
   if (human === 'failed') {
     logRejection('human-check')
     return silentOk()

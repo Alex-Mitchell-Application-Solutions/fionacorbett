@@ -295,7 +295,7 @@ people read messages they wrote to Fiona.
   test that checks the list against the collection source. Adding
   `memory-photos` updated two of those and not the third, which produced a page
   that built cleanly and threw `Invalid src prop … does not match
-  images.localPatterns` on the first request rendering a guest's photograph —
+images.localPatterns` on the first request rendering a guest's photograph —
   past lint, typecheck, the build and the container check. `uploads.test.ts`
   fails now if a collection declares an `upload` block and is not in the list.
 - **Migrations are generated, committed, and applied by the deploy.** Never on
@@ -355,6 +355,20 @@ Non-obvious things that matter, all of which have bitten somewhere:
   own origin.
 - **No PII in logs, ever.** Not names, not addresses, not memory bodies, and not
   filenames — a filename from a phone carries a date and sometimes a location.
+- **An empty file input is not an empty submission.** Every browser sends a part
+  for `<input type="file">` with nothing chosen: empty name, zero bytes, no
+  content type. An `instanceof File` check treats it as a file, the mime check
+  then rejects it, and someone who attached no photograph is told "Photographs
+  only, please". `isAttachedPhoto` in `limits.ts` is the one predicate both sides
+  use — the client had the filter and the server did not, which is exactly how
+  this shipped.
+- **Turnstile's two keys are set together or not at all.** Only the secret being
+  set means the widget never renders, no token is ever produced, and every
+  genuine submission looks like a bot — answered with a silent 200 and thrown
+  away. `verifyHuman` returns `misconfigured` for that, checked before the token,
+  and the endpoint answers an honest 500. Caused here by a single mistyped name:
+  `PUBLIC_TURNSTILE_SITE_KEY` rather than `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, which
+  Next does not expose to the browser and does not warn about.
 
 ---
 
@@ -618,3 +632,13 @@ questions.
 
 Drift is a bug. A document describing a system that no longer exists is worse
 than no document, because it is trusted.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

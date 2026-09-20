@@ -12,6 +12,7 @@ import {
   MAX_MEMORY_PHOTO_BYTES,
   MEMORY_PHOTO_ACCEPT,
   formatMegabytes,
+  isAttachedPhoto,
 } from '@/lib/memories/limits'
 import {
   type MemoryFieldErrors,
@@ -160,8 +161,9 @@ export function MemoryForm({
       return
     }
 
-    const photos = data.getAll('photos').filter((entry): entry is File => entry instanceof File)
-    const realPhotos = photos.filter((photo) => photo.size > 0)
+    // The same predicate the endpoint uses, so the client cannot accept what the
+    // server rejects or vice versa.
+    const realPhotos = data.getAll('photos').filter(isAttachedPhoto)
 
     if (realPhotos.length > MAX_MEMORY_PHOTOS) {
       setFieldErrors({ photos: `Please attach no more than ${MAX_MEMORY_PHOTOS} photographs.` })
