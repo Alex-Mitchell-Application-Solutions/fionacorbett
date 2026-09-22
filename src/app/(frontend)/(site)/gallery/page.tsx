@@ -46,7 +46,7 @@ export default async function GalleryPage() {
         // A page that renders nothing at all reads as broken.
         <Container width="measure" className="section-y">
           <Text size="lead">
-            There are no photographs here yet. They are being scanned — check back shortly.
+            There are no photographs here yet. They are being scanned, check back shortly.
           </Text>
         </Container>
       ) : (

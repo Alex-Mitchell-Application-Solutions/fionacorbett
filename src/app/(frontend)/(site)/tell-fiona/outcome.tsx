@@ -13,10 +13,9 @@ import { Text } from '@/components/primitives/Text'
  * display the JSON. With JavaScript none of these is ever reached: the form
  * swaps its own content in place.
  *
- * They inherit the standalone frame from the parent layout, so like the form
- * itself they link nowhere into the unfinished site. `check` and `not-sent`
- * deliberately tell the reader to go back rather than offering a link: back
- * restores everything they typed, and a link would lose it.
+ * `check` and `not-sent` deliberately tell the reader to go back rather than
+ * offering a link: back restores everything they typed, and a link would lose
+ * it.
  */
 export function Outcome({ title, children }: { title: string; children: ReactNode }) {
   return (

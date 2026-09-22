@@ -126,21 +126,6 @@ it. Put it here.
 - ✅ **Plain text, not rich text.** A rich text editor for a stranger means
   storing markup a stranger supplied, which means sanitising it correctly
   forever. Line breaks are all this needs.
-- ✅ **`/tell-fiona` is standalone and links nowhere.** It is being shared
-  ahead of the rest of the site, so it sits outside the `(site)` route group and
-  inherits no navigation: no header links, no footer call to action, no domain
-  named, and a wordmark that is a `<span>` rather than a link. The confirmation
-  after sending links nowhere either — "read the others" would hand someone a
-  half-built gallery at the exact moment they have just written something
-  personal. **Enforced by `pnpm run check:standalone`**, which greps the
-  prerendered HTML and fails the gate on any internal href; a comment cannot
-  catch a link arriving from a layout or a primitive's default.
-
-  **When the site is finished**, move the route into `(site)`, delete
-  `StandaloneFrame.tsx` and delete the check. It is deliberately not a feature
-  flag: a flag controlling whether a page leaks links to an unfinished site is a
-  flag that will one day be set wrong.
-
 - ✅ **A thank-you state that stands on its own.** Confirms it is saved, says it
   is read before it goes up so nobody resends, and offers "write another" as a
   button that resets the form in place. Focus moves to the heading, because the
@@ -157,11 +142,12 @@ it. Put it here.
 
 - ✅ **Four routes**: home, gallery, memories, share. Plus `/gallery/[id]`,
   `/design-system`, `/health` and the two endpoints.
-- ✅ **Two layouts, and the split is load-bearing.** `(frontend)/layout.tsx` is
-  the document — language, font preload, metadata base — and carries no chrome.
-  `(site)/layout.tsx` adds the header, footer and skip link. A page opts into the
-  navigation by being in the `(site)` group, so going standalone is a deliberate
-  placement rather than something a page can drift into.
+- ✅ **Two layouts.** `(frontend)/layout.tsx` is the document — language, font
+  preload, metadata base — and carries no chrome. `(site)/layout.tsx` adds the
+  header, footer and skip link, and every public page is in that group.
+  `/tell-fiona` was outside it, with its own chrome and a gate check, while the
+  link was being shared ahead of the rest of the site; that is over and both are
+  gone.
 - ✅ **Every page opens on a full-bleed photograph** through one `PageHero`.
 - ✅ **Site settings as a global**, so every hero image and the two home-page
   link labels change without a deploy.
@@ -208,6 +194,7 @@ src/
         gallery/           the gallery and one route per photograph
         memories/          approved memories
         design-system/     the showcase. noindex
+        tell-fiona/        the form, and the three pages a no-JS post lands on
       tell-fiona/      OUTSIDE (site), on purpose. Links nowhere
       submit-memory/       POST endpoint — the only write path for a stranger
       memory-token/        mints the signed dwell token
@@ -216,8 +203,8 @@ src/
   collections/             Payload schema and access control
   components/
     primitives/            Button, Heading, Text, Field, PayloadImage, …
-    layout/                SiteHeader, NavDrawer, NavTrigger, SiteFooter, PageHero,
-                           StandaloneFrame
+    layout/                SiteHeader, HeaderShell, NavDrawer, NavTrigger,
+                           SiteFooter, PageHero
     gallery/ memories/     feature components
     showcase/              the showcase's own furniture
   globals/SiteSettings.ts  hero images and copy, editable without a deploy
@@ -531,8 +518,7 @@ tokens.
 All of these, every time:
 
 1. `pnpm run ci:quality` passes and **the real result is reported**, failures
-   included. That now ends with `check:standalone`, so a link leaking onto
-   `/tell-fiona` fails the gate rather than reaching whoever was sent it.
+   included.
 2. The narrowest viewport was opened before any wider one.
 3. Any new primitive is on `/design-system` with every variant, size and state.
 4. No new literal colours and no arbitrary-value utilities.

@@ -13,10 +13,8 @@ const SITE_DESCRIPTION =
  * The document, and nothing else.
  *
  * The site's chrome — header, footer, skip link — deliberately does NOT live
- * here. It lives in `(site)/layout.tsx`, which wraps the pages that are part of
- * the site proper. `/tell-fiona` sits outside that group, because it is
- * shared on its own while the rest of the site is still being built and must not
- * link anywhere a recipient cannot go yet.
+ * here. It lives in `(site)/layout.tsx`, so this file stays the document and
+ * nothing else.
  *
  * Everything genuinely common to every page is here: the language, the font
  * preload, the metadata base. Duplicating those into two root layouts would be
@@ -38,8 +36,7 @@ export function generateMetadata(): Metadata {
     },
     description: SITE_DESCRIPTION,
     // Not indexed anywhere, production included. See isIndexable() for why that
-    // is a decision rather than an omission. It matters more than usual while
-    // /tell-fiona is circulating ahead of the site being finished.
+    // is a decision rather than an omission.
     robots: isIndexable() ? undefined : { index: false, follow: false },
     openGraph: {
       type: 'website',

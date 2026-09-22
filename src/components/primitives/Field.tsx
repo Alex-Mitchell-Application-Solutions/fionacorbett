@@ -42,7 +42,7 @@ export function Field({
 
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor={name} className="font-heading tracking-heading text-sm text-text">
+      <label htmlFor={name} className="font-heading tracking-heading text-lg text-text">
         {label}
         {required ? null : (
           // Marking what is optional rather than what is required, because on

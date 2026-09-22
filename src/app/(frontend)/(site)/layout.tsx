@@ -6,16 +6,10 @@ import { SiteHeader } from '@/components/layout/SiteHeader'
 /**
  * The site proper: everything that carries the navigation.
  *
- * A group layout rather than the root one, and the distinction is the whole
- * point of this file. `/tell-fiona` is outside this group and gets none of
- * it, because that URL is being shared while the rest of the site is still being
- * built — a header linking to a half-finished gallery is exactly what the people
- * receiving that link must not see.
- *
- * Adding a page to this group opts it into the chrome. That is the right default
- * and it should stay the default: the standalone treatment is the exception and
- * should have to be chosen deliberately, by placing a route outside the group,
- * rather than being something a page can drift into.
+ * A group layout rather than the root one, so the root stays the document and
+ * nothing else. Every public page now lives in here, including `/tell-fiona`,
+ * which was deliberately outside it while the rest of the site was unfinished
+ * and the link was being shared on its own.
  */
 export default function SiteLayout({ children }: { children: ReactNode }) {
   return (
