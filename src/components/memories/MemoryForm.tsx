@@ -293,19 +293,6 @@ export function MemoryForm({
         </Field>
 
         <Field
-          name="relationship"
-          label="How you know Fiona"
-          hint="Her sister, next door at Elm Road, worked with her at the surgery — whatever fits."
-          error={fieldErrors.relationship}
-        >
-          {(props) => <input {...props} type="text" maxLength={80} />}
-        </Field>
-
-        <Field name="title" label="Give it a title" error={fieldErrors.title}>
-          {(props) => <input {...props} type="text" maxLength={120} />}
-        </Field>
-
-        <Field
           name="body"
           label="Your memory"
           required
@@ -322,6 +309,9 @@ export function MemoryForm({
           )}
         </Field>
 
+        {/* Optional, but kept in plain view: a photograph is the thing most
+            likely to make a memory land, and hiding the field would mean most
+            people never think to add one. */}
         <Field
           name="photos"
           label="Photographs"
@@ -341,14 +331,44 @@ export function MemoryForm({
           )}
         </Field>
 
-        <Field
-          name="email"
-          label="Your email"
-          hint="Never shown on the site. Only so Alex can reply if he needs to."
-          error={fieldErrors.email}
+        {/* The rest is optional and tucked away, so the form reads as two
+            questions and a photo rather than six fields. A native <details>,
+            so it works without JavaScript. Forced open when one of its fields
+            has an error, or the message would be hidden. */}
+        <details
+          open={
+            fieldErrors.relationship || fieldErrors.title || fieldErrors.email ? true : undefined
+          }
+          className="group border-t border-line pt-6"
         >
-          {(props) => <input {...props} type="email" autoComplete="email" />}
-        </Field>
+          <summary className="font-heading tracking-heading cursor-pointer text-sm text-text-muted">
+            Add more if you like
+          </summary>
+
+          <div className="mt-6 flex flex-col gap-8">
+            <Field
+              name="relationship"
+              label="How you know Fiona"
+              hint="Her sister, next door at Elm Road, worked with her at the surgery — whatever fits."
+              error={fieldErrors.relationship}
+            >
+              {(props) => <input {...props} type="text" maxLength={80} />}
+            </Field>
+
+            <Field name="title" label="Give it a title" error={fieldErrors.title}>
+              {(props) => <input {...props} type="text" maxLength={120} />}
+            </Field>
+
+            <Field
+              name="email"
+              label="Your email"
+              hint="Never shown on the site. Only so Alex can reply if he needs to."
+              error={fieldErrors.email}
+            >
+              {(props) => <input {...props} type="email" autoComplete="email" />}
+            </Field>
+          </div>
+        </details>
       </div>
 
       {formError ? (

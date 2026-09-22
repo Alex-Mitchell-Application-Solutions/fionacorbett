@@ -95,8 +95,10 @@ it. Put it here.
 - ✅ **Public submission at `/share-a-memory`**, with `/share` redirecting to it.
   The short form is for saying out loud and printing; the long one is canonical,
   because a bare `/share` in a forwarded message tells the recipient nothing.
-- ✅ **Fields**: name (required), how they know Fiona, a title, the memory
-  (required), up to six photographs, an email address that is never shown.
+- ✅ **Fields**, in this order: name and the memory (both required), up to six
+  photographs (optional, kept in plain view), then an "Add more if you like"
+  `<details>` holding how they know Fiona, a title and an email address that is
+  never shown. The section opens itself if one of its fields has an error.
 - ✅ **Approval-gated.** New memories are `pending` and appear nowhere —
   not on the page, not in the REST list, not by a guessed id. Verified against
   the running server, not assumed.
@@ -114,6 +116,7 @@ it. Put it here.
   where someone taps before the bundle lands. A form whose only submit path is
   JavaScript has one point of failure between a person's memory of Fiona and the
   database. Modelled on luxury-gardens' consultation form.
+
 - ✅ **Four layers in front of the write** — rate limit, honeypot, signed dwell
   token, shared Zod schema. See [The submission path](#the-submission-path).
 - ✅ **No CAPTCHA, deliberately.** Turnstile was built and removed on 20
