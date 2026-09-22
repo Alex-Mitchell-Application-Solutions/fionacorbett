@@ -235,6 +235,7 @@ src/
     variants.ts            one style recipe per primitive
     base.css               accessibility and motion floor
     utilities.css          what Tailwind has no namespace for
+    header.css             the header receding over a hero, ported from luxury-gardens
     nav-drawer.css         the menu drawer, ported from luxury-gardens
   migrations/              generated, committed, applied by the deploy
 scripts/seed.ts            bootstrap an empty database
@@ -411,8 +412,9 @@ Checkable. A reviewer should be able to point at a line.
   the document so the box is reserved before the bytes arrive. Layout shift is a
   bug.
 - **`sizes` is stated on every image** and should match the grid it sits in.
-- **There are exactly two client components on this site**: `MemoryForm` and
-  `NavDrawer`. The drawer is a modal `<dialog>` holding one boolean; its links
+- **There are exactly three client components on this site**: `MemoryForm`,
+  `NavDrawer` and `HeaderShell`. `HeaderShell` holds one boolean — scrolled or
+  not — and header.css does the rest. The drawer is a modal `<dialog>` holding one boolean; its links
   are rendered on the server and passed in, so they cost no client JavaScript.
   Adding a third needs a reason.
 

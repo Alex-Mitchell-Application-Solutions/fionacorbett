@@ -1,0 +1,97 @@
+/**
+ * The header that recedes over a hero. Ported from luxury-gardens.
+ *
+ * At the top of a page that opens with a hero, the bar is lifted out of sight
+ * and the name and menu button show in white over the photograph. Scrolling
+ * brings the bar down from above and the type settles to ink. Scrolling back
+ * reverses it.
+ *
+ * Three conditions, and anything unexpected falls back to a solid, legible bar:
+ *
+ *   html[data-header-enhanced]  JavaScript is running, so data-scrolled will be
+ *                               kept up to date. Set by an inline script in
+ *                               (site)/layout.tsx before first paint.
+ *   body:has([data-hero])       the page opens with a PageHero. Pages without
+ *                               one — a single photograph, the showcase — keep
+ *                               the solid bar, which is also what makes the
+ *                               header readable on them at all.
+ *   [data-scrolled='false']     the reader is still at the top.
+ */
+@layer components {
+  .site-header {
+    position: fixed;
+    isolation: isolate;
+  }
+
+  /* The bar is a layer behind the contents, so it can slide away while the name
+   * and button stay put. A background on the header would take them with it. */
+  .site-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-color: var(--color-surface);
+    border-block-end: 1px solid var(--color-line);
+    transform: translateY(0);
+    opacity: 1;
+    transition:
+      opacity var(--duration-slow) var(--ease-out),
+      transform var(--duration-slow) var(--ease-out);
+  }
+
+  .site-header-persistent {
+    color: var(--color-text);
+    transition: color var(--duration-slow) var(--ease-out);
+  }
+
+  html[data-header-enhanced] body:has([data-hero]) .site-header[data-scrolled='false']::before {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+
+  html[data-header-enhanced]
+    body:has([data-hero])
+    .site-header[data-scrolled='false']
+    .site-header-persistent {
+    color: var(--color-text-inverse);
+  }
+
+  /*
+   * Keyboard focus brings the bar back. A control that is invisible but
+   * focusable fails WCAG 2.4.7. :has(:focus-visible) rather than :focus-within,
+   * so a mouse click on the menu button does not start a fade nobody asked for.
+   */
+  html[data-header-enhanced]
+    body:has([data-hero])
+    .site-header[data-scrolled='false']:has(:focus-visible)::before {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  html[data-header-enhanced]
+    body:has([data-hero])
+    .site-header[data-scrolled='false']:has(:focus-visible)
+    .site-header-persistent {
+    color: var(--color-text);
+  }
+
+  /*
+   * Except while the drawer is open. The <dialog> lives inside the header in
+   * the DOM, so tabbing through the menu would otherwise fade the bar in behind
+   * a panel covering it. With a modal dialog open the rest of the page is inert,
+   * so there is no control in the bar for the focus rule to protect.
+   */
+  html[data-header-enhanced]
+    body:has([data-hero]):has(.site-nav-drawer[open])
+    .site-header[data-scrolled='false']:has(:focus-visible)::before {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+
+  html[data-header-enhanced]
+    body:has([data-hero]):has(.site-nav-drawer[open])
+    .site-header[data-scrolled='false']:has(:focus-visible)
+    .site-header-persistent {
+    color: var(--color-text-inverse);
+  }
+}

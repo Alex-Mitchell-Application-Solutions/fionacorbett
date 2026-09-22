@@ -56,7 +56,10 @@ export default function FrontendLayout({ children }: { children: ReactNode }) {
     // en-GB rather than en. It is what makes the base layer's hyphenation use
     // British break patterns, and it inserts no character into the DOM, so
     // copied text is unchanged.
-    <html lang="en-GB">
+    // suppressHydrationWarning: an inline script in (site)/layout.tsx sets
+    // data-header-enhanced on this element before React hydrates, which React
+    // would otherwise report as a mismatch.
+    <html lang="en-GB" suppressHydrationWarning>
       <head>
         {/*
           Only the body face is preloaded. Preloading the serif as well would
