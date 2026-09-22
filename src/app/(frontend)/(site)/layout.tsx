@@ -20,14 +20,6 @@ import { SiteHeader } from '@/components/layout/SiteHeader'
 export default function SiteLayout({ children }: { children: ReactNode }) {
   return (
     <>
-      {/* Runs before first paint. It tells header.css that JavaScript is on, so
-          the bar may recede over a hero. Without it the bar simply stays solid
-          and legible. */}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: "document.documentElement.dataset.headerEnhanced=''",
-        }}
-      />
       {/* Before the header, and the first thing a keyboard reaches. The gallery
           is a long list of links, and without this every visit to a second page
           means tabbing through all of them again. */}

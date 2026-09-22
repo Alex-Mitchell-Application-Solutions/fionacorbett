@@ -22,11 +22,8 @@ export function SiteFooter() {
           <div>
             <Rule tone="inverse" />
             <p className="title-face mt-6 text-2xl text-text-inverse">
-              Know Fiona? Tell her what she means to you.
+              Celebrating 60 years of Fiona&apos;s life with Family and Friends.
             </p>
-            <Text tone="inverse" className="mt-3 max-w-md">
-              A few lines is plenty. A photograph, if you have one.
-            </Text>
           </div>
 
           <Link

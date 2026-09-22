@@ -56,10 +56,7 @@ export default function FrontendLayout({ children }: { children: ReactNode }) {
     // en-GB rather than en. It is what makes the base layer's hyphenation use
     // British break patterns, and it inserts no character into the DOM, so
     // copied text is unchanged.
-    // suppressHydrationWarning: an inline script in (site)/layout.tsx sets
-    // data-header-enhanced on this element before React hydrates, which React
-    // would otherwise report as a mismatch.
-    <html lang="en-GB" suppressHydrationWarning>
+    <html lang="en-GB">
       <head>
         {/*
           Only the body face is preloaded. Preloading the serif as well would
@@ -78,6 +75,16 @@ export default function FrontendLayout({ children }: { children: ReactNode }) {
           type="font/woff2"
           crossOrigin="anonymous"
         />
+
+        {/*
+          The header's no-JavaScript fallback. HeaderShell is what keeps
+          data-scrolled up to date, so without it the attribute stays 'false'
+          and the bar would be lifted out of sight for good on any page with a
+          hero. This pins it visible. Unlayered, so it beats @layer components.
+        */}
+        <noscript>
+          <style>{`.site-header::before{opacity:1;transform:translateY(0)}.site-header-persistent{color:var(--color-text)}`}</style>
+        </noscript>
       </head>
       <body>{children}</body>
     </html>

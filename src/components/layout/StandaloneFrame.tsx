@@ -40,13 +40,6 @@ export function StandaloneFrame({ children }: { children: ReactNode }) {
 
       {/* Same position, height and treatment as SiteHeader, so the page does not
           look like a different site from the one it will eventually join. */}
-      {/* The same receding header as the rest of the site — see header.css — so
-          the flag it depends on is set here too, before first paint. */}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: "document.documentElement.dataset.headerEnhanced=''",
-        }}
-      />
       <HeaderShell className="site-header inset-x-0 top-0 z-header h-header">
         <Container width="wide" className="flex h-full items-center">
           <span className="site-header-persistent title-face text-lg whitespace-nowrap sm:text-xl">
