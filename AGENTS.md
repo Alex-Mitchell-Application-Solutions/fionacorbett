@@ -68,7 +68,7 @@ it. Put it here.
 ### The gallery
 
 - ✅ **Photographs collection** — image, title, description, year, optional
-  manual order, featured flag. `src/collections/Photographs.ts`.
+  manual order. `src/collections/Photographs.ts`.
 - ✅ **Decades derived from year, not filed by hand.** There is no `chapters`
   collection and there should not be. The section structure of `/gallery` falls
   out of each photograph's year through `src/lib/gallery.ts`. A hand-maintained
@@ -84,8 +84,6 @@ it. Put it here.
   order, then title. The single-photograph page derives its sequence from the
   same function, so previous and next cannot walk a different order from the
   page. Blank manual order sorts last, not first — see the test.
-- ✅ **Featured photographs on the home page**, as a scroll-snap row with no
-  JavaScript.
 - 🔵 **View Transitions between photographs.** Would give back the sense of
   staying in place that an overlay has, without giving up the addressable route.
   Deferred because it is an enhancement to a page that already works.

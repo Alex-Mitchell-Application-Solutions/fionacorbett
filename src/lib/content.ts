@@ -64,22 +64,6 @@ export const getPhotographs = unstable_cache(
   { tags: [CACHE_TAGS.photographs] },
 )
 
-export const getFeaturedPhotographs = unstable_cache(
-  async (): Promise<Photograph[]> => {
-    const payload = await client()
-    const result = await payload.find({
-      collection: 'photographs',
-      depth: 2,
-      limit: 12,
-      where: { featured: { equals: true } },
-      sort: 'year',
-    })
-    return result.docs
-  },
-  ['photographs-featured'],
-  { tags: [CACHE_TAGS.photographs] },
-)
-
 /**
  * Approved memories, newest first.
  *

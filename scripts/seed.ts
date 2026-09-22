@@ -158,7 +158,6 @@ async function seed() {
         title: sample.title,
         description: 'Placeholder. Delete this once there are real photographs.',
         year: sample.year,
-        featured: index < 3,
       },
     })
   }

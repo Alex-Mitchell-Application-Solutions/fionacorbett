@@ -100,14 +100,5 @@ export const Photographs: CollectionConfig = {
           'Optional. Orders photographs that share a year. Leave it blank unless two are out of sequence.',
       },
     },
-    {
-      name: 'featured',
-      type: 'checkbox',
-      defaultValue: false,
-      admin: {
-        position: 'sidebar',
-        description: 'Show this one on the home page. Pick a handful, not forty.',
-      },
-    },
   ],
 }

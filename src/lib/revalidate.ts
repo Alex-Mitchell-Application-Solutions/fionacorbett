@@ -78,8 +78,6 @@ function invalidate(run: () => void): void {
 export function revalidateGallery(): void {
   invalidate(() => {
     revalidateTag(CACHE_TAGS.photographs, UNTIL_CHANGED)
-    // The home page shows the featured photographs, so it moves with the gallery.
-    revalidatePath('/')
     revalidatePath('/gallery')
   })
 }

@@ -1,16 +1,17 @@
-import { FeaturedStrip } from '@/components/gallery/FeaturedStrip'
+import Link from 'next/link'
+
 import { PageHero } from '@/components/layout/PageHero'
 import { Button } from '@/components/primitives/Button'
 import { Container } from '@/components/primitives/Container'
 import { Rule } from '@/components/primitives/Rule'
 import { Text } from '@/components/primitives/Text'
-import { getFeaturedPhotographs, getSiteSettings } from '@/lib/content'
+import { getSiteSettings } from '@/lib/content'
 
 /**
  * The home page.
  *
- * Three things, in this order: the photograph, the two doorways, a handful of
- * pictures to prove there are more.
+ * Three things, in this order: the photograph, a sentence saying what the site
+ * is, and the two doorways.
  *
  * The doorways are the page. Everything else on this site hangs off them, and
  * they are sized as a statement rather than as navigation — `2xl` on the link
@@ -19,7 +20,7 @@ import { getFeaturedPhotographs, getSiteSettings } from '@/lib/content'
  * choice between five is a menu.
  */
 export default async function HomePage() {
-  const [settings, featured] = await Promise.all([getSiteSettings(), getFeaturedPhotographs()])
+  const settings = await getSiteSettings()
 
   return (
     <>
@@ -31,6 +32,18 @@ export default async function HomePage() {
       />
 
       <Container width="wide" className="section-y">
+        <Text size="lead" className="max-w-measure">
+          Everything here was put together for Fiona&rsquo;s sixtieth. If you know her,{' '}
+          <Link
+            href="/share-a-memory"
+            className="text-text underline decoration-line-strong underline-offset-4 hover:decoration-text"
+          >
+            click here to share a memory
+          </Link>
+          .
+        </Text>
+        <Rule className="mt-6 mb-14" />
+
         <nav aria-label="The two things to do here">
           {/*
             Stacked at every width, not side by side from md.
@@ -67,15 +80,7 @@ export default async function HomePage() {
             </li>
           </ul>
         </nav>
-
-        <Rule className="mt-14" />
-        <Text size="lead" className="mt-6 max-w-measure">
-          Everything here was put together for Fiona&rsquo;s sixtieth. If you know her, there is a
-          space below for whatever you would like to say.
-        </Text>
       </Container>
-
-      {featured.length > 0 ? <FeaturedStrip photographs={featured} /> : null}
     </>
   )
 }

@@ -19,7 +19,7 @@ import type { Photograph } from '@/payload-types'
  * there is exactly one place to fix if the shape changes.
  */
 function photograph(fields: Pick<Photograph, 'id' | 'year' | 'title'> & Partial<Photograph>) {
-  return { order: null, description: null, featured: false, ...fields } as Photograph
+  return { order: null, description: null, ...fields } as Photograph
 }
 
 describe('decadeOf', () => {

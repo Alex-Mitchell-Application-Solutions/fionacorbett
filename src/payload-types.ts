@@ -235,10 +235,6 @@ export interface Photograph {
    * Optional. Orders photographs that share a year. Leave it blank unless two are out of sequence.
    */
   order?: number | null;
-  /**
-   * Show this one on the home page. Pick a handful, not forty.
-   */
-  featured?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -503,7 +499,6 @@ export interface PhotographsSelect<T extends boolean = true> {
   description?: T;
   year?: T;
   order?: T;
-  featured?: T;
   updatedAt?: T;
   createdAt?: T;
 }
