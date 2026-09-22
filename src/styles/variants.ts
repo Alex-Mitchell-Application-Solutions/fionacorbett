@@ -23,7 +23,7 @@ export type ButtonSurface = 'default' | 'inverse'
 export type ButtonWeight = 'light' | 'regular' | 'bold'
 
 const BUTTON_BASE =
-  'site-button inline-flex items-center gap-3 rounded-sm border transition-colors ' +
+  'site-button inline-flex gap-3 rounded-sm border transition-colors ' +
   'duration-base ease-out disabled:pointer-events-none disabled:opacity-50'
 
 /**
@@ -35,8 +35,14 @@ const BUTTON_BASE =
  * passing `whitespace-normal` at the call site, because two whitespace utilities
  * on one element are resolved by stylesheet order, not by which was written last.
  */
-const BUTTON_ONE_LINE = 'whitespace-nowrap justify-center'
-const BUTTON_WRAPS = 'text-left text-balance justify-start'
+const BUTTON_ONE_LINE = 'whitespace-nowrap items-center justify-center'
+/*
+ * `items-baseline`, not `items-center`: flex baseline alignment uses each item's
+ * first baseline, so the arrow sits on the first line of a wrapped label, where
+ * a reader's eye starts. Centred, it floated in the gap between the lines. No
+ * offset to tune either — the arrow rests on the baseline like a character.
+ */
+const BUTTON_WRAPS = 'text-left text-balance items-baseline justify-start'
 
 const BUTTON_WEIGHTS: Record<ButtonWeight, string> = {
   light: 'font-light',

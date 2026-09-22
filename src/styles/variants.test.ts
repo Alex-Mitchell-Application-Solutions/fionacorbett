@@ -120,6 +120,19 @@ describe('buttonClasses', () => {
     }
   })
 
+  it('aligns the arrow to the first line when a label wraps, and emits one alignment', () => {
+    expect(buttonClasses('link', '2xl')).toContain('items-baseline')
+    expect(buttonClasses('link', 'md')).toContain('items-center')
+    for (const variant of VARIANTS) {
+      for (const size of SIZES) {
+        const align = buttonClasses(variant, size)
+          .split(' ')
+          .filter((c) => c.startsWith('items-'))
+        expect(align, `${variant}/${size}`).toHaveLength(1)
+      }
+    }
+  })
+
   it('restates every variant for the inverse surface', () => {
     // Without the inverse table, `secondary` is dark text on a transparent
     // background over a dark band: invisible until hover paints something

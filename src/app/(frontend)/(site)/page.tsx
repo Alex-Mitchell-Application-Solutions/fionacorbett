@@ -69,13 +69,13 @@ export default async function HomePage() {
           */}
           <ul className="flex flex-col gap-6 md:gap-10">
             <li>
-              <Button href="/gallery" variant="link" size="2xl" face="serif">
-                {settings.galleryLinkLabel}
+              <Button href="/tell-fiona" variant="link" size="2xl" face="serif">
+                {settings.memoriesLinkLabel}
               </Button>
             </li>
             <li>
-              <Button href="/tell-fiona" variant="link" size="2xl" face="serif">
-                {settings.memoriesLinkLabel}
+              <Button href="/gallery" variant="link" size="2xl" face="serif">
+                {settings.galleryLinkLabel}
               </Button>
             </li>
           </ul>
