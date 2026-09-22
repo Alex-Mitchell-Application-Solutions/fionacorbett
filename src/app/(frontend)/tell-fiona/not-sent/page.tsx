@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import { Outcome, OutcomeText } from '@/app/(frontend)/share-a-memory/outcome'
+import { Outcome, OutcomeText } from '@/app/(frontend)/tell-fiona/outcome'
 
 export const metadata: Metadata = { title: 'That did not send' }
 
@@ -15,8 +15,8 @@ export default function NotSentPage() {
   return (
     <Outcome title="That did not send">
       <OutcomeText>
-        Something went wrong at our end, and your memory was not saved — so please do not assume it
-        arrived.
+        Something went wrong at our end, and what you wrote was not saved — so please do not assume
+        it arrived.
       </OutcomeText>
       <OutcomeText>
         Press your browser&rsquo;s back button, where everything you wrote will still be, and try

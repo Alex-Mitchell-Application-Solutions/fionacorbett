@@ -280,7 +280,7 @@ export default function DesignSystemPage() {
         <Row label="">
           <Entry code='variant="link" size="2xl" face="serif"'>
             <Button variant="link" size="2xl" face="serif">
-              Share a memory
+              Tell Fiona what she means to you
             </Button>
           </Entry>
         </Row>
@@ -335,7 +335,7 @@ export default function DesignSystemPage() {
           </Field>
           <Field
             name="showcase-textarea"
-            label="Your memory"
+            label="Your message"
             required
             hint="However long you like."
           >

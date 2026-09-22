@@ -14,7 +14,7 @@ const SITE_DESCRIPTION =
  *
  * The site's chrome — header, footer, skip link — deliberately does NOT live
  * here. It lives in `(site)/layout.tsx`, which wraps the pages that are part of
- * the site proper. `/share-a-memory` sits outside that group, because it is
+ * the site proper. `/tell-fiona` sits outside that group, because it is
  * shared on its own while the rest of the site is still being built and must not
  * link anywhere a recipient cannot go yet.
  *
@@ -39,7 +39,7 @@ export function generateMetadata(): Metadata {
     description: SITE_DESCRIPTION,
     // Not indexed anywhere, production included. See isIndexable() for why that
     // is a decision rather than an omission. It matters more than usual while
-    // /share-a-memory is circulating ahead of the site being finished.
+    // /tell-fiona is circulating ahead of the site being finished.
     robots: isIndexable() ? undefined : { index: false, follow: false },
     openGraph: {
       type: 'website',

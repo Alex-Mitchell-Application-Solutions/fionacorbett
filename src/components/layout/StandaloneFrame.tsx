@@ -6,7 +6,7 @@ import { Text } from '@/components/primitives/Text'
 /**
  * The chrome for a page that is shared on its own.
  *
- * `/share-a-memory` is being sent out while the rest of the site is still being
+ * `/tell-fiona` is being sent out while the rest of the site is still being
  * built, so it carries no navigation at all. Not a hidden navigation, not a
  * disabled one — there is no anchor to anywhere on this page except the ones the
  * form needs.
@@ -22,7 +22,7 @@ import { Text } from '@/components/primitives/Text'
  * push people towards this page, which would be circular here, and it names the
  * domain in a way that invites typing it into a browser.
  *
- * When the site is finished, the fix is to move `share-a-memory` into the
+ * When the site is finished, the fix is to move `tell-fiona` into the
  * `(site)` group and delete this. It is deliberately not built as a toggle: a
  * flag that controls whether a page leaks links to an unfinished site is a flag
  * that will one day be set wrong.

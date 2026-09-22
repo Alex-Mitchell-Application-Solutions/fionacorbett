@@ -22,7 +22,7 @@ export function SiteFooter() {
           <div>
             <Rule tone="inverse" />
             <p className="title-face mt-6 text-2xl text-text-inverse">
-              Know Fiona? Write something.
+              Know Fiona? Tell her what she means to you.
             </p>
             <Text tone="inverse" className="mt-3 max-w-md">
               A few lines is plenty. A photograph, if you have one.
@@ -30,10 +30,10 @@ export function SiteFooter() {
           </div>
 
           <Link
-            href="/share-a-memory"
+            href="/tell-fiona"
             className="font-heading tracking-heading shrink-0 text-sm uppercase text-text-inverse underline underline-offset-8 decoration-line-inverse hover:decoration-text-inverse"
           >
-            Share a memory
+            Tell Fiona what she means to you
           </Link>
         </div>
 

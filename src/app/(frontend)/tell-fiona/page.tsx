@@ -7,7 +7,7 @@ import { getSiteSettings } from '@/lib/content'
 import { mintDwellToken } from '@/lib/dwell-token'
 
 export const metadata: Metadata = {
-  title: 'Share a memory',
+  title: 'Tell Fiona what she means to you',
   description: 'Write something for Fiona’s sixtieth.',
 }
 

@@ -1,5 +1,5 @@
 /**
- * Fail the build if /share-a-memory links anywhere on this site.
+ * Fail the build if /tell-fiona links anywhere on this site.
  *
  * That page is shared on its own while the rest of the site is being built, so
  * every link on it has to stay on the page. This is a rule about rendered
@@ -16,7 +16,7 @@
 import { readFileSync, existsSync } from 'node:fs'
 
 /**
- * Every page under /share-a-memory, not just the form.
+ * Every page under /tell-fiona, not just the form.
  *
  * The three outcome pages are where a no-JS submission lands, so they are part
  * of the same shared link and must link nowhere into the unfinished site
@@ -24,10 +24,10 @@ import { readFileSync, existsSync } from 'node:fs'
  * covered by it.
  */
 const PAGES = [
-  '.next/server/app/share-a-memory.html',
-  '.next/server/app/share-a-memory/thank-you.html',
-  '.next/server/app/share-a-memory/check.html',
-  '.next/server/app/share-a-memory/not-sent.html',
+  '.next/server/app/tell-fiona.html',
+  '.next/server/app/tell-fiona/thank-you.html',
+  '.next/server/app/tell-fiona/check.html',
+  '.next/server/app/tell-fiona/not-sent.html',
 ]
 
 /**
@@ -79,13 +79,13 @@ function isOffender(href) {
     if (href.startsWith('/_next/')) return false
     // Links between the share page and its own outcome pages stay inside the
     // shared link, so they are not a way off it.
-    if (href === '/share-a-memory' || href.startsWith('/share-a-memory/')) return false
+    if (href === '/tell-fiona' || href.startsWith('/tell-fiona/')) return false
     return true
   }
 }
 
 if (offenders.length > 0) {
-  console.error('check-standalone: /share-a-memory must not link into the rest of the site.')
+  console.error('check-standalone: /tell-fiona must not link into the rest of the site.')
   console.error('These pages are shared on their own while the site is unfinished.\n')
   for (const entry of [...new Set(offenders)]) console.error(`  ${entry}`)
   console.error('\nSee src/components/layout/StandaloneFrame.tsx.')

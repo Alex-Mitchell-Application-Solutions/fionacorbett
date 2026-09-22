@@ -38,7 +38,7 @@ will search for it.
 1. **See the photographs.** A curated gallery of Fiona across six decades,
    grouped into decades, each photograph on its own page with a title and the
    story behind it.
-2. **Share a memory.** Anyone with the link can write something — a fond memory,
+2. **Tell Fiona what she means to you.** Anyone with the link can write something — a fond memory,
    what she means to them — and optionally attach photographs. Nothing appears
    until Alex approves it.
 
@@ -90,7 +90,7 @@ it. Put it here.
 
 ### Memories
 
-- ✅ **Public submission at `/share-a-memory`**, with `/share` redirecting to it.
+- ✅ **Public submission at `/tell-fiona`**, with `/share` redirecting to it.
   The short form is for saying out loud and printing; the long one is canonical,
   because a bare `/share` in a forwarded message tells the recipient nothing.
 - ✅ **Fields**, in this order: name and the memory (both required), up to six
@@ -126,7 +126,7 @@ it. Put it here.
 - ✅ **Plain text, not rich text.** A rich text editor for a stranger means
   storing markup a stranger supplied, which means sanitising it correctly
   forever. Line breaks are all this needs.
-- ✅ **`/share-a-memory` is standalone and links nowhere.** It is being shared
+- ✅ **`/tell-fiona` is standalone and links nowhere.** It is being shared
   ahead of the rest of the site, so it sits outside the `(site)` route group and
   inherits no navigation: no header links, no footer call to action, no domain
   named, and a wordmark that is a `<span>` rather than a link. The confirmation
@@ -208,7 +208,7 @@ src/
         gallery/           the gallery and one route per photograph
         memories/          approved memories
         design-system/     the showcase. noindex
-      share-a-memory/      OUTSIDE (site), on purpose. Links nowhere
+      tell-fiona/      OUTSIDE (site), on purpose. Links nowhere
       submit-memory/       POST endpoint — the only write path for a stranger
       memory-token/        mints the signed dwell token
       health/              liveness probe for the container and Railway
@@ -374,7 +374,7 @@ Non-obvious things that matter, all of which have bitten somewhere:
   because a browser would otherwise just display the JSON. Not discriminated on
   `Content-Type`: both send multipart, one because the browser does and one
   because the form carries files.
-- **A page that renders a dwell token must revalidate.** `/share-a-memory` sets
+- **A page that renders a dwell token must revalidate.** `/tell-fiona` sets
   `revalidate = 3600`. Prerendered once at build time the baked token would be
   months old and every no-JS submission would be rejected as expired.
 - **An empty file input is not an empty submission.** Every browser sends a part
@@ -526,7 +526,7 @@ All of these, every time:
 
 1. `pnpm run ci:quality` passes and **the real result is reported**, failures
    included. That now ends with `check:standalone`, so a link leaking onto
-   `/share-a-memory` fails the gate rather than reaching whoever was sent it.
+   `/tell-fiona` fails the gate rather than reaching whoever was sent it.
 2. The narrowest viewport was opened before any wider one.
 3. Any new primitive is on `/design-system` with every variant, size and state.
 4. No new literal colours and no arbitrary-value utilities.
@@ -595,7 +595,7 @@ Every 🧱 item, so the path to production is visible in one place.
 - 🧱 **Shrink the share page's bundle.** Measured on the production build by
   gzipping every chunk the page references: 179 KB gzipped on every page, which
   is the App Router's floor and not something this project introduced, and
-  **272 KB on `/share-a-memory`**. The extra 92.6 KB is a single chunk and it is
+  **272 KB on `/tell-fiona`**. The extra 92.6 KB is a single chunk and it is
   mostly Zod, pulled in because the form shares `memorySubmissionSchema` with the
   server.
 

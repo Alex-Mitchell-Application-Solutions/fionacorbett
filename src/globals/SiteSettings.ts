@@ -80,7 +80,7 @@ export const SiteSettings: GlobalConfig = {
               name: 'memoriesLinkLabel',
               type: 'text',
               required: true,
-              defaultValue: 'Share a memory',
+              defaultValue: 'Tell Fiona what she means to you',
               admin: { description: 'The second of the two large links on the home page.' },
             },
           ],
@@ -117,7 +117,7 @@ export const SiteSettings: GlobalConfig = {
           ],
         },
         {
-          label: 'Share a memory',
+          label: 'Tell Fiona',
           fields: [
             {
               name: 'shareHero',
@@ -125,7 +125,12 @@ export const SiteSettings: GlobalConfig = {
               relationTo: 'media',
               required: true,
             },
-            { name: 'shareTitle', type: 'text', required: true, defaultValue: 'Share a memory' },
+            {
+              name: 'shareTitle',
+              type: 'text',
+              required: true,
+              defaultValue: 'Tell Fiona what she means to you',
+            },
             {
               name: 'shareLead',
               type: 'textarea',

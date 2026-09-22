@@ -294,7 +294,7 @@ export function MemoryForm({
 
         <Field
           name="body"
-          label="Your memory"
+          label="Your message"
           required
           hint="A fond memory, something she did, or just what she means to you. However long you like."
           error={fieldErrors.body}

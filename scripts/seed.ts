@@ -115,7 +115,7 @@ async function seed() {
       homeTitle: 'Fiona Corbett',
       homeLead: 'Replace this from the admin, under Site settings.',
       galleryLinkLabel: 'See the photographs',
-      memoriesLinkLabel: 'Share a memory',
+      memoriesLinkLabel: 'Tell Fiona what she means to you',
       galleryHero: galleryHero.id,
       galleryTitle: 'The photographs',
       galleryLead: null,
@@ -123,8 +123,9 @@ async function seed() {
       memoriesTitle: 'Memories of Fiona',
       memoriesLead: null,
       shareHero: shareHero.id,
-      shareTitle: 'Share a memory',
-      shareLead: 'Write down something you remember about Fiona. It does not need to be long.',
+      shareTitle: 'Tell Fiona what she means to you',
+      shareLead:
+        'A memory, a thank-you, or simply why she matters to you. It does not need to be long.',
       shareThanks:
         'That has been saved, and Fiona will read it on her birthday. Alex looks at everything before it goes up, so it will not appear straight away — nothing has gone wrong if you do not see it yet.',
     },

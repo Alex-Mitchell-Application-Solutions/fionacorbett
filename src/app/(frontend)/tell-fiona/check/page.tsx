@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import { Outcome, OutcomeText } from '@/app/(frontend)/share-a-memory/outcome'
+import { Outcome, OutcomeText } from '@/app/(frontend)/tell-fiona/outcome'
 
 export const metadata: Metadata = { title: 'Something needs changing' }
 

@@ -76,13 +76,13 @@ const see = (path: string): Response =>
   new Response(null, { status: 303, headers: { location: path } })
 
 const nativeReply: Reply = {
-  accepted: () => see('/share-a-memory/thank-you'),
+  accepted: () => see('/tell-fiona/thank-you'),
   // No field names in the URL: they would sit in access logs beside an IP, and
   // the page cannot show them in place anyway without the values to go with
   // them. It tells the reader to go back, where the browser restores what they
   // typed.
-  invalid: () => see('/share-a-memory/check'),
-  failed: () => see('/share-a-memory/not-sent'),
+  invalid: () => see('/tell-fiona/check'),
+  failed: () => see('/tell-fiona/not-sent'),
 }
 
 const jsonReply: Reply = {

@@ -35,10 +35,10 @@ export default async function HomePage() {
         <Text size="lead" className="max-w-measure">
           Everything here was put together for Fiona&rsquo;s sixtieth. If you know her,{' '}
           <Link
-            href="/share-a-memory"
+            href="/tell-fiona"
             className="text-text underline decoration-line-strong underline-offset-4 hover:decoration-text"
           >
-            click here to share a memory
+            click here to tell Fiona what she means to you
           </Link>
           .
         </Text>
@@ -74,7 +74,7 @@ export default async function HomePage() {
               </Button>
             </li>
             <li>
-              <Button href="/share-a-memory" variant="link" size="2xl" face="serif">
+              <Button href="/tell-fiona" variant="link" size="2xl" face="serif">
                 {settings.memoriesLinkLabel}
               </Button>
             </li>

@@ -7,7 +7,7 @@ import { SiteHeader } from '@/components/layout/SiteHeader'
  * The site proper: everything that carries the navigation.
  *
  * A group layout rather than the root one, and the distinction is the whole
- * point of this file. `/share-a-memory` is outside this group and gets none of
+ * point of this file. `/tell-fiona` is outside this group and gets none of
  * it, because that URL is being shared while the rest of the site is still being
  * built — a header linking to a half-finished gallery is exactly what the people
  * receiving that link must not see.

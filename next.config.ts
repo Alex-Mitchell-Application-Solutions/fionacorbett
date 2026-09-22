@@ -45,7 +45,7 @@ const nextConfig: NextConfig = {
       // The short form, for saying out loud and printing on a card. The
       // canonical URL is the long one, because a stranger receiving a bare
       // /share has no idea what it is.
-      { source: '/share', destination: '/share-a-memory', permanent: false },
+      { source: '/share', destination: '/tell-fiona', permanent: false },
     ]
   },
   webpack: (webpackConfig) => {

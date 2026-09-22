@@ -20,7 +20,7 @@ import { Container } from '@/components/primitives/Container'
 const LINKS = [
   { href: '/gallery', label: 'Photographs' },
   { href: '/memories', label: 'Memories' },
-  { href: '/share-a-memory', label: 'Share a memory' },
+  { href: '/tell-fiona', label: 'Tell Fiona' },
 ] as const
 
 export function SiteHeader() {

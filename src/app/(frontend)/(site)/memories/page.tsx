@@ -51,8 +51,8 @@ export default async function MemoriesPage() {
               Yours could be the first. It does not need to be long — a few lines about when you met
               her, or something she did that you have never forgotten.
             </Text>
-            <Button href="/share-a-memory" variant="link" size="lg" className="mt-8">
-              Share a memory
+            <Button href="/tell-fiona" variant="link" size="lg" className="mt-8">
+              Tell Fiona what she means to you
             </Button>
           </div>
         ) : (
@@ -68,7 +68,7 @@ export default async function MemoriesPage() {
                 one, and making them scroll back to the header is how that does
                 not happen. */}
             <div className="mt-20 border-t border-line pt-10">
-              <Button href="/share-a-memory" variant="link" size="lg">
+              <Button href="/tell-fiona" variant="link" size="lg">
                 Add yours
               </Button>
             </div>
