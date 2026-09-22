@@ -1,5 +1,3 @@
-import Link from 'next/link'
-
 import { PageHero } from '@/components/layout/PageHero'
 import { Button } from '@/components/primitives/Button'
 import { Container } from '@/components/primitives/Container'
@@ -33,14 +31,7 @@ export default async function HomePage() {
 
       <Container width="wide" className="section-y">
         <Text size="lead" className="max-w-measure">
-          Everything here was put together for Fiona&rsquo;s sixtieth. If you know her,{' '}
-          <Link
-            href="/tell-fiona"
-            className="text-text underline decoration-line-strong underline-offset-4 hover:decoration-text"
-          >
-            click here to tell Fiona what she means to you
-          </Link>
-          .
+          Everything here was put together for Fiona&rsquo;s sixtieth.
         </Text>
         <Rule className="mt-6 mb-14" />
 
