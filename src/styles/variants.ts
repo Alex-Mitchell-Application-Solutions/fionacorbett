@@ -23,9 +23,20 @@ export type ButtonSurface = 'default' | 'inverse'
 export type ButtonWeight = 'light' | 'regular' | 'bold'
 
 const BUTTON_BASE =
-  'site-button inline-flex items-center justify-center gap-3 ' +
-  'whitespace-nowrap rounded-sm border transition-colors ' +
+  'site-button inline-flex items-center gap-3 rounded-sm border transition-colors ' +
   'duration-base ease-out disabled:pointer-events-none disabled:opacity-50'
+
+/**
+ * Every button stays on one line, except the home page's `2xl` links, which
+ * wrap.
+ *
+ * A label like "Tell Fiona what she means to you" at display size is wider than
+ * any screen, and on one line it ran off the page. Chosen here rather than by
+ * passing `whitespace-normal` at the call site, because two whitespace utilities
+ * on one element are resolved by stylesheet order, not by which was written last.
+ */
+const BUTTON_ONE_LINE = 'whitespace-nowrap justify-center'
+const BUTTON_WRAPS = 'text-left text-balance justify-start'
 
 const BUTTON_WEIGHTS: Record<ButtonWeight, string> = {
   light: 'font-light',
@@ -82,8 +93,8 @@ const BUTTON_SIZES: Record<ButtonSize, string> = {
  * Its type also runs larger at the same size name, since there is no fill to
  * find it by.
  *
- * `2xl` is the home page's two doorways — "See the photographs" and "Share a
- * memory" — which are the page's entire navigation and are sized as a statement
+ * `2xl` is the home page's two doorways — "See the photographs" and "Tell Fiona
+ * what she means to you" — which are the page's entire navigation and are sized as a statement
  * rather than as a control. It steps down twice on a phone: at --text-6xl a
  * 390px screen gets about four words a line, and two of these stacked would be
  * the whole first screen with no photograph left.
@@ -105,8 +116,10 @@ export function buttonClasses(
 ): string {
   const tones = surface === 'inverse' ? BUTTON_VARIANTS_INVERSE : BUTTON_VARIANTS
   const sizes = variant === 'link' ? BUTTON_SIZES_LINK : BUTTON_SIZES
+  const wraps = variant === 'link' && size === '2xl'
   return [
     BUTTON_BASE,
+    wraps ? BUTTON_WRAPS : BUTTON_ONE_LINE,
     BUTTON_FACES[face],
     BUTTON_WEIGHTS[weight],
     tones[variant],

@@ -107,30 +107,38 @@ async function seed() {
   const memoriesHero = await upload('placeholder-memories', 'PLACEHOLDER — MEMORIES', 2400, 1600)
   const shareHero = await upload('placeholder-share', 'PLACEHOLDER — SHARE', 2400, 1600)
 
-  await payload.updateGlobal({
-    slug: 'site-settings',
-    data: {
-      homeHero: homeHero.id,
-      homeEyebrow: 'Sixty years',
-      homeTitle: 'Fiona Corbett',
-      homeLead: 'Replace this from the admin, under Site settings.',
-      galleryLinkLabel: 'See the photographs',
-      memoriesLinkLabel: 'Tell Fiona what she means to you',
-      galleryHero: galleryHero.id,
-      galleryTitle: 'The photographs',
-      galleryLead: null,
-      memoriesHero: memoriesHero.id,
-      memoriesTitle: 'Memories of Fiona',
-      memoriesLead: null,
-      shareHero: shareHero.id,
-      shareTitle: 'Tell Fiona what she means to you',
-      shareLead:
-        'A memory, a thank-you, or simply why she matters to you. It does not need to be long.',
-      shareThanks:
-        'That has been saved, and Fiona will read it on her birthday. Alex looks at everything before it goes up, so it will not appear straight away — nothing has gone wrong if you do not see it yet.',
-    },
-  })
-  payload.logger.info('Site settings written.')
+  // Only on a fresh database. Site settings are Alex's to edit, and an earlier
+  // version of this script rewrote them on every run — which silently put the
+  // placeholder heroes back over photographs he had chosen.
+  const existingSettings = await payload.findGlobal({ slug: 'site-settings', depth: 0 })
+  if (existingSettings.homeHero) {
+    payload.logger.info('Site settings already configured. Leaving them alone.')
+  } else {
+    await payload.updateGlobal({
+      slug: 'site-settings',
+      data: {
+        homeHero: homeHero.id,
+        homeEyebrow: 'Sixty years',
+        homeTitle: 'Fiona Corbett',
+        homeLead: 'Replace this from the admin, under Site settings.',
+        galleryLinkLabel: 'See the photographs',
+        memoriesLinkLabel: 'Tell Fiona what she means to you',
+        galleryHero: galleryHero.id,
+        galleryTitle: 'The photographs',
+        galleryLead: null,
+        memoriesHero: memoriesHero.id,
+        memoriesTitle: 'Memories of Fiona',
+        memoriesLead: null,
+        shareHero: shareHero.id,
+        shareTitle: 'Tell Fiona what she means to you',
+        shareLead:
+          'A memory, a thank-you, or simply why she matters to you. It does not need to be long.',
+        shareThanks:
+          'That has been saved, and Fiona will read it on her birthday. Alex looks at everything before it goes up, so it will not appear straight away — nothing has gone wrong if you do not see it yet.',
+      },
+    })
+    payload.logger.info('Site settings written.')
+  }
 
   // --- sample photographs ------------------------------------------------
   const existingPhotographs = await payload.find({ collection: 'photographs', limit: 1 })

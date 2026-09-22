@@ -105,6 +105,21 @@ describe('buttonClasses', () => {
     expect(buttonClasses('link', 'md')).toMatch(/\bpy-\d/)
   })
 
+  it('lets only the 2xl link wrap, and never emits two whitespace rules', () => {
+    // A long label at display size ran off the screen when every button was
+    // forced onto one line.
+    expect(buttonClasses('link', '2xl')).not.toContain('whitespace-nowrap')
+    expect(buttonClasses('link', 'xl')).toContain('whitespace-nowrap')
+    for (const variant of VARIANTS) {
+      for (const size of SIZES) {
+        const ws = buttonClasses(variant, size)
+          .split(' ')
+          .filter((c) => c.startsWith('whitespace-'))
+        expect(ws.length, `${variant}/${size}`).toBeLessThanOrEqual(1)
+      }
+    }
+  })
+
   it('restates every variant for the inverse surface', () => {
     // Without the inverse table, `secondary` is dark text on a transparent
     // background over a dark band: invisible until hover paints something
