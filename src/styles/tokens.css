@@ -182,7 +182,11 @@
    * two-column memory card, or a single photograph shown on its own. */
   --container-feature: 56rem;
   --container-content: 72rem;
-  --container-wide: 90rem;
+  /* The page's own width: the header, the hero copy and the menu drawer all sit
+   * on its edge. 120rem, matching luxury-gardens, so on any ordinary screen they
+   * run to the gutter at the screen's edge rather than centring early — at 90rem
+   * the logo and menu button sat well inside the window on a laptop. */
+  --container-wide: 120rem;
 
   /* The page's left edge. The logo, the hero's copy and every full-bleed band
    * begin on this axis, so a band that opts out of it has to say so. */
@@ -203,7 +207,10 @@
 
   /* The fixed header's height, as a token: the hero pads by it so copy anchored
    * to the foot of a short screen cannot slide under the bar. */
-  --spacing-header: 5rem;
+  /* Tall enough that the name and the menu button sit comfortably down from the
+   * top of the screen rather than tucked against it. Was 5rem. The drawer's top
+   * row uses the same height, so the close button still lands on the open one. */
+  --spacing-header: 7rem;
 
   /* The navigation drawer's width on a screen wide enough to leave some page
    * showing beside it. On a phone it takes the whole width. */

@@ -16,7 +16,6 @@ import { Container } from '@/components/primitives/Container'
  * button legible over an unknown image.
  */
 const LINKS = [
-  { href: '/', label: 'Home' },
   { href: '/tell-fiona', label: 'Tell Fiona what she means to you' },
   { href: '/gallery', label: 'The photographs' },
   { href: '/memories', label: 'Memories' },
@@ -26,12 +25,14 @@ function DrawerPanel() {
   return (
     <div className="site-nav-drawer-body pb-16">
       <nav aria-label="Main" className="w-full">
-        <ul className="site-nav-drawer-items flex flex-col items-end gap-8 text-right">
+        <ul className="site-nav-drawer-items flex flex-col items-end gap-10 text-right">
           {LINKS.map((link) => (
             <li key={link.href}>
               <Link
                 href={link.href}
-                className="title-face block text-2xl leading-tight text-text text-balance md:text-3xl"
+                // The sans, at text-xl, as luxury-gardens sets its drawer: a list
+                // of destinations to choose between, not display type.
+                className="font-body block text-xl leading-tight text-text"
               >
                 {link.label}
               </Link>
