@@ -346,6 +346,9 @@ export function MemoryForm({
           </summary>
 
           <div className="mt-6 flex flex-col gap-8">
+            <Field name="title" label="Give it a title" error={fieldErrors.title}>
+              {(props) => <input {...props} type="text" maxLength={120} />}
+            </Field>
             <Field
               name="relationship"
               label="How you know Fiona"
@@ -353,10 +356,6 @@ export function MemoryForm({
               error={fieldErrors.relationship}
             >
               {(props) => <input {...props} type="text" maxLength={80} />}
-            </Field>
-
-            <Field name="title" label="Give it a title" error={fieldErrors.title}>
-              {(props) => <input {...props} type="text" maxLength={120} />}
             </Field>
 
             <Field
