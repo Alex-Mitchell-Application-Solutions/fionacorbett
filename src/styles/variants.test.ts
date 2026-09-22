@@ -120,17 +120,19 @@ describe('buttonClasses', () => {
     }
   })
 
-  it('aligns the arrow to the first line when a label wraps, and emits one alignment', () => {
-    expect(buttonClasses('link', '2xl')).toContain('items-baseline')
-    expect(buttonClasses('link', 'md')).toContain('items-center')
+  it('gives every button exactly one display', () => {
+    // The wrapping link is a block so its arrow can sit inline after the last
+    // word; everything else is inline-flex. Two display utilities on one
+    // element would be decided by stylesheet order.
     for (const variant of VARIANTS) {
       for (const size of SIZES) {
-        const align = buttonClasses(variant, size)
+        const display = buttonClasses(variant, size)
           .split(' ')
-          .filter((c) => c.startsWith('items-'))
-        expect(align, `${variant}/${size}`).toHaveLength(1)
+          .filter((c) => c === 'block' || c === 'inline-flex')
+        expect(display, `${variant}/${size}`).toHaveLength(1)
       }
     }
+    expect(buttonClasses('link', '2xl')).toContain('block')
   })
 
   it('restates every variant for the inverse surface', () => {

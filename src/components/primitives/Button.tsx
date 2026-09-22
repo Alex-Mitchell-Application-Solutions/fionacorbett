@@ -8,6 +8,7 @@ import {
   type ButtonVariant,
   type ButtonWeight,
   buttonClasses,
+  buttonWraps,
 } from '@/styles/variants'
 
 type CommonProps = {
@@ -51,7 +52,9 @@ export function Button(props: ButtonAsButton | ButtonAsLink) {
     .filter(Boolean)
     .join(' ')
 
-  const content = (
+  const content = buttonWraps(variant, size) ? (
+    <WrappingLabel>{children}</WrappingLabel>
+  ) : (
     <>
       {children}
       {variant === 'link' ? <Arrow /> : null}
@@ -70,5 +73,39 @@ export function Button(props: ButtonAsButton | ButtonAsLink) {
     <button {...(rest as ButtonHTMLAttributes<HTMLButtonElement>)} className={classes}>
       {content}
     </button>
+  )
+}
+
+/**
+ * A label that may wrap, with the arrow set inline after its last word.
+ *
+ * The last word and the arrow are held together with `whitespace-nowrap`, so the
+ * arrow can never be left alone at the start of a line. For a label that is not a
+ * plain string there is no last word to find, and the arrow simply follows.
+ */
+function WrappingLabel({ children }: { children: ReactNode }) {
+  const arrow = <Arrow className="ms-3 inline-block align-baseline" />
+
+  if (typeof children !== 'string') {
+    return (
+      <>
+        {children}
+        {arrow}
+      </>
+    )
+  }
+
+  const cut = children.trimEnd().lastIndexOf(' ')
+  const head = cut === -1 ? '' : children.slice(0, cut + 1)
+  const last = cut === -1 ? children : children.slice(cut + 1)
+
+  return (
+    <>
+      {head}
+      <span className="whitespace-nowrap">
+        {last}
+        {arrow}
+      </span>
+    </>
   )
 }

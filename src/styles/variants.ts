@@ -23,7 +23,7 @@ export type ButtonSurface = 'default' | 'inverse'
 export type ButtonWeight = 'light' | 'regular' | 'bold'
 
 const BUTTON_BASE =
-  'site-button inline-flex gap-3 rounded-sm border transition-colors ' +
+  'site-button rounded-sm border transition-colors ' +
   'duration-base ease-out disabled:pointer-events-none disabled:opacity-50'
 
 /**
@@ -35,14 +35,19 @@ const BUTTON_BASE =
  * passing `whitespace-normal` at the call site, because two whitespace utilities
  * on one element are resolved by stylesheet order, not by which was written last.
  */
-const BUTTON_ONE_LINE = 'whitespace-nowrap items-center justify-center'
+const BUTTON_ONE_LINE = 'inline-flex items-center justify-center gap-3 whitespace-nowrap'
 /*
- * `items-baseline`, not `items-center`: flex baseline alignment uses each item's
- * first baseline, so the arrow sits on the first line of a wrapped label, where
- * a reader's eye starts. Centred, it floated in the gap between the lines. No
- * offset to tune either — the arrow rests on the baseline like a character.
+ * A block of wrapping text, with the arrow set inline after the last word (see
+ * Button). Not flex: a wrapped flex item's box spans the whole available width
+ * rather than its longest line, so an arrow beside it landed at the far edge of
+ * the page, nowhere near the words.
  */
-const BUTTON_WRAPS = 'text-left text-balance items-baseline justify-start'
+const BUTTON_WRAPS = 'block text-left text-balance'
+
+/** Whether a button's label wraps, which changes how Button places the arrow. */
+export function buttonWraps(variant: ButtonVariant, size: ButtonSize): boolean {
+  return variant === 'link' && size === '2xl'
+}
 
 const BUTTON_WEIGHTS: Record<ButtonWeight, string> = {
   light: 'font-light',
@@ -122,7 +127,7 @@ export function buttonClasses(
 ): string {
   const tones = surface === 'inverse' ? BUTTON_VARIANTS_INVERSE : BUTTON_VARIANTS
   const sizes = variant === 'link' ? BUTTON_SIZES_LINK : BUTTON_SIZES
-  const wraps = variant === 'link' && size === '2xl'
+  const wraps = buttonWraps(variant, size)
   return [
     BUTTON_BASE,
     wraps ? BUTTON_WRAPS : BUTTON_ONE_LINE,
