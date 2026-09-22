@@ -22,6 +22,9 @@ export type ImageDocument = {
   alt?: string | null
   width?: number | null
   height?: number | null
+  /** Percentages, 0–100, set by clicking the image in the admin. */
+  focalX?: number | null
+  focalY?: number | null
 }
 
 /**
@@ -95,7 +98,16 @@ export function PayloadImage({
   }
 
   if (fill) {
-    return <NextImage {...common} fill style={{ objectFit: 'cover' }} />
+    // A filled image is cropped to its box, and the box's shape changes with the
+    // screen: a hero is wide on a laptop and a tall narrow slice on a phone. By
+    // default that slice is the centre of the photograph, which on a two-person
+    // shot is the gap between them. The focal point set in the admin moves the
+    // crop onto the subject instead. Unset, it falls back to the centre.
+    const x = media.focalX ?? 50
+    const y = media.focalY ?? 50
+    return (
+      <NextImage {...common} fill style={{ objectFit: 'cover', objectPosition: `${x}% ${y}%` }} />
+    )
   }
 
   return <NextImage {...common} width={media.width ?? 1600} height={media.height ?? 1200} />
