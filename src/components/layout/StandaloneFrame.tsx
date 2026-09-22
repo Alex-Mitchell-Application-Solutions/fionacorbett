@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import { HeaderShell } from '@/components/layout/HeaderShell'
 import { Container } from '@/components/primitives/Container'
 import { Text } from '@/components/primitives/Text'
 
@@ -39,13 +40,20 @@ export function StandaloneFrame({ children }: { children: ReactNode }) {
 
       {/* Same position, height and treatment as SiteHeader, so the page does not
           look like a different site from the one it will eventually join. */}
-      <header className="fixed inset-x-0 top-0 z-header h-header">
+      {/* The same receding header as the rest of the site — see header.css — so
+          the flag it depends on is set here too, before first paint. */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: "document.documentElement.dataset.headerEnhanced=''",
+        }}
+      />
+      <HeaderShell className="site-header inset-x-0 top-0 z-header h-header">
         <Container width="wide" className="flex h-full items-center">
-          <span className="title-face text-lg whitespace-nowrap text-text-inverse sm:text-xl">
+          <span className="site-header-persistent title-face text-lg whitespace-nowrap sm:text-xl">
             Fiona Corbett
           </span>
         </Container>
-      </header>
+      </HeaderShell>
 
       <main id="main">{children}</main>
 
