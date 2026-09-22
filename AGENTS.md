@@ -216,7 +216,8 @@ src/
   collections/             Payload schema and access control
   components/
     primitives/            Button, Heading, Text, Field, PayloadImage, …
-    layout/                SiteHeader, SiteFooter, PageHero, StandaloneFrame
+    layout/                SiteHeader, NavDrawer, NavTrigger, SiteFooter, PageHero,
+                           StandaloneFrame
     gallery/ memories/     feature components
     showcase/              the showcase's own furniture
   globals/SiteSettings.ts  hero images and copy, editable without a deploy
@@ -234,6 +235,7 @@ src/
     variants.ts            one style recipe per primitive
     base.css               accessibility and motion floor
     utilities.css          what Tailwind has no namespace for
+    nav-drawer.css         the menu drawer, ported from luxury-gardens
   migrations/              generated, committed, applied by the deploy
 scripts/seed.ts            bootstrap an empty database
 .railway/railway.ts        deploy config as code. NOT applied on push
@@ -409,8 +411,10 @@ Checkable. A reviewer should be able to point at a line.
   the document so the box is reserved before the bytes arrive. Layout shift is a
   bug.
 - **`sizes` is stated on every image** and should match the grid it sits in.
-- **There is exactly one client component on this site** (`MemoryForm`). Adding a
-  second needs a reason in the proposal.
+- **There are exactly two client components on this site**: `MemoryForm` and
+  `NavDrawer`. The drawer is a modal `<dialog>` holding one boolean; its links
+  are rendered on the server and passed in, so they cost no client JavaScript.
+  Adding a third needs a reason.
 
 ### Types
 

@@ -205,6 +205,10 @@
    * to the foot of a short screen cannot slide under the bar. */
   --spacing-header: 5rem;
 
+  /* The navigation drawer's width on a screen wide enough to leave some page
+   * showing beside it. On a phone it takes the whole width. */
+  --spacing-drawer: 26rem;
+
   /* Hero height. svh rather than vh, lvh or dvh, and the choice is load-bearing:
    * vh and lvh both measure the viewport with the mobile browser chrome
    * retracted, so a hero sized in either is taller than the screen on first

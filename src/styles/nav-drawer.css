@@ -1,0 +1,121 @@
+/**
+ * The menu drawer. Ported from luxury-gardens and trimmed to three links.
+ *
+ * A modal <dialog>, which the browser promotes to the top layer — above every
+ * stacking context whatever its z-index — so nothing here sets one.
+ */
+@layer components {
+  .site-nav-drawer {
+    /* The user-agent sheet centres a dialog; this pins it to the right edge. */
+    margin: 0 0 0 auto;
+    width: var(--spacing-drawer);
+    max-width: 100%;
+    /* dvh, where the hero takes svh: the drawer should reach the bottom of what
+     * is actually visible. */
+    height: 100dvh;
+    max-height: none;
+    /* Stated, because a bare `display: flex` here would override the closed
+     * dialog's `display: none` and leave the drawer on screen permanently. The
+     * open state is set below. */
+    display: none;
+    flex-direction: column;
+    border: 0;
+    padding: 0;
+    background-color: var(--color-surface-sunken);
+    color: var(--color-text);
+    overflow-y: auto;
+    translate: 100% 0;
+    /* display and overlay are discrete and have to be told they may animate, or
+     * the panel appears in place and the slide is never seen. */
+    transition:
+      translate var(--duration-base) var(--ease-out),
+      display var(--duration-base) var(--ease-out) allow-discrete,
+      overlay var(--duration-base) var(--ease-out) allow-discrete;
+  }
+
+  .site-nav-drawer[open] {
+    display: flex;
+    translate: 0 0;
+  }
+
+  @starting-style {
+    .site-nav-drawer[open] {
+      translate: 100% 0;
+    }
+  }
+
+  .site-nav-drawer::backdrop {
+    background-color: color-mix(in srgb, var(--color-scrim) 45%, transparent);
+    opacity: 0;
+    transition:
+      opacity var(--duration-base) var(--ease-out),
+      display var(--duration-base) var(--ease-out) allow-discrete,
+      overlay var(--duration-base) var(--ease-out) allow-discrete;
+  }
+
+  .site-nav-drawer[open]::backdrop {
+    opacity: 1;
+  }
+
+  @starting-style {
+    .site-nav-drawer[open]::backdrop {
+      opacity: 0;
+    }
+  }
+
+  /*
+   * The drawer's top row, the same height as the header, with the same
+   * right-hand inset as the header's content — so the close button lands on the
+   * open button.
+   *
+   * The header sits in a `wide` Container: the gutter from the viewport edge
+   * until the container caps at --container-wide, then centred. The max() below
+   * is that same arithmetic, so the two stay aligned on a very wide screen too.
+   */
+  .site-nav-drawer-bar {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: flex-end;
+    height: var(--spacing-header);
+    padding-inline-end: var(--spacing-gutter);
+
+    @media (width >= 48rem) {
+      padding-inline-end: max(
+        var(--spacing-gutter-lg),
+        calc((100vw - var(--container-wide)) / 2 + var(--spacing-gutter-lg))
+      );
+    }
+  }
+
+  .site-nav-drawer-body {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding-inline: var(--spacing-gutter-lg) var(--spacing-gutter);
+
+    @media (width >= 48rem) {
+      padding-inline-end: max(
+        var(--spacing-gutter-lg),
+        calc((100vw - var(--container-wide)) / 2 + var(--spacing-gutter-lg))
+      );
+    }
+  }
+
+  /* Resting on one item fades the others back, so the one being chosen stands
+   * forward. Gated on a device that hovers, or a tap would latch it. */
+  .site-nav-drawer-items > li > a {
+    transition: opacity var(--duration-fast) var(--ease-out);
+  }
+
+  @media (hover: hover) {
+    .site-nav-drawer-items:has(> li:hover) > li:not(:hover) > a {
+      opacity: var(--opacity-dimmed);
+    }
+  }
+
+  /* Scroll lock in CSS, so the component has no body style to restore. */
+  body:has(.site-nav-drawer[open]) {
+    overflow: hidden;
+  }
+}
