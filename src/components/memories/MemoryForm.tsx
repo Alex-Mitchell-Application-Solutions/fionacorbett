@@ -341,7 +341,7 @@ export function MemoryForm({
           }
           className="group border-t border-line pt-6"
         >
-          <summary className="font-heading tracking-heading cursor-pointer text-sm text-text-muted">
+          <summary className="font-heading tracking-heading cursor-pointer text-base text-text-muted">
             Add more if you like
           </summary>
 
