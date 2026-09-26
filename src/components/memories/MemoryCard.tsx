@@ -1,5 +1,6 @@
 import { Heading } from '@/components/primitives/Heading'
 import { PayloadImage } from '@/components/primitives/PayloadImage'
+import { PayloadVideo } from '@/components/primitives/PayloadVideo'
 import { Rule } from '@/components/primitives/Rule'
 import type { Memory } from '@/payload-types'
 
@@ -55,6 +56,15 @@ export function MemoryCard({ memory }: { memory: Memory }) {
           ))}
         </ul>
       ) : null}
+
+      {/* After the photographs and before the name: it belongs to the memory,
+          and the attribution still closes it. PayloadVideo renders nothing for
+          an unresolved id, so no check is needed here. */}
+      <PayloadVideo
+        video={memory.video}
+        label={`Video from ${memory.fromName}`}
+        className="mt-8 max-w-feature"
+      />
 
       <footer className="mt-8">
         <Rule />

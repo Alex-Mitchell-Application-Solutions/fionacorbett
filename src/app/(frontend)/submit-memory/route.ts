@@ -1,13 +1,17 @@
 import configPromise from '@payload-config'
-import { getPayload } from 'payload'
+import { ValidationError, getPayload } from 'payload'
 
 import { verifyDwellToken } from '@/lib/dwell-token'
 import {
   ACCEPTED_MEMORY_PHOTO_TYPES,
   MAX_MEMORY_PHOTOS,
   MAX_MEMORY_PHOTO_BYTES,
+  TOO_LARGE_MESSAGE,
+  VIDEO_TYPE_MESSAGE,
+  declaredSize,
   formatMegabytes,
-  isAttachedPhoto,
+  isAttachedFile,
+  videoProblem,
 } from '@/lib/memories/limits'
 import {
   type MemoryFieldErrors,
@@ -26,11 +30,13 @@ import { clientIp, rateLimit } from '@/lib/rate-limit'
  * Layers, cheapest first, so a bot costs us as little as possible:
  *
  *   1. IP rate limit      in-memory fixed window, a blunt backstop
+ *   1a. Declared size     Content-Length against the ceiling, before parsing
  *   2. Honeypot           an off-screen input bots fill and humans never see
  *   3. Signed dwell token HMAC(timestamp) minted at mount, verified here
  *   4. Zod validation     the same schema the form used
  *   5. Photo checks       count, size and exact mime type
- *   6. Write              through the Local API, status pending
+ *   5a. Video checks      at most one, size and exact mime type
+ *   6. Write              the video, then photographs, then the memory
  *
  * **There is no CAPTCHA, deliberately.** Turnstile was here and was removed on
  * 20 September 2026, after it cost more than it protected: a single mistyped
@@ -136,6 +142,20 @@ export async function POST(request: Request): Promise<Response> {
     return reply.failed('That is a few in quick succession. Please try again shortly.', 429)
   }
 
+  // 1a. Declared size. `formData()` buffers the whole body, so a request that
+  //     says it is larger than anything the form can produce is refused before
+  //     any of it is read. A person reaches this only by bypassing the form's
+  //     own checks, but they get words rather than a silent success all the same.
+  const size = declaredSize(request.headers.get('content-length'))
+  if (size === 'too-large') {
+    logRejection('declared-size')
+    return reply.failed(TOO_LARGE_MESSAGE, 413)
+  }
+  // Absent is let through: this guards memory, not authenticity, and every
+  // per-file cap below still applies. Logged, so a proxy stripping the header
+  // shows up.
+  if (size === 'absent') console.warn('[submit-memory] no content-length declared')
+
   let form: FormData
   try {
     form = await request.formData()
@@ -190,12 +210,12 @@ export async function POST(request: Request): Promise<Response> {
 
   // 5. Photographs. A real person reaches every one of these by accident, so
   //    they all return a message rather than a silent success.
-  // isAttachedPhoto, not `instanceof File`. A file input with nothing chosen
+  // isAttachedFile, not `instanceof File`. A file input with nothing chosen
   // still sends a part — empty name, zero bytes, no content type — and treating
   // that as a file fails the mime check below, so a submission with no
   // photograph gets told "Photographs only, please". Shared with the client so
   // the two cannot apply different rules; they already had.
-  const photos = form.getAll('photos').filter(isAttachedPhoto)
+  const photos = form.getAll('photos').filter(isAttachedFile)
 
   if (photos.length > MAX_MEMORY_PHOTOS) {
     return reply.invalid({ photos: `Please attach no more than ${MAX_MEMORY_PHOTOS} photographs.` })
@@ -219,11 +239,51 @@ export async function POST(request: Request): Promise<Response> {
     }
   }
 
-  // 6. Write. Photographs first, so a memory never references an upload that
-  //    failed; an orphaned photo with no memory is tidier than a memory with a
-  //    broken image on it.
+  // 5a. Video. The same predicate as the photographs, so an empty video input
+  //     is no video rather than a wrong type, and the same words as the form.
+  const videos = form.getAll('video').filter(isAttachedFile)
+  const videoError = videoProblem(videos)
+  if (videoError) {
+    logRejection('video')
+    return reply.invalid({ video: videoError })
+  }
+  const video = videos[0]
+
+  // 6. Write. Uploads first, so a memory never references an upload that
+  //    failed; an orphaned photo or video with no memory is tidier than a
+  //    memory with a broken image on it.
   try {
     const payload = await getPayload({ config: await configPromise })
+
+    // The video before the photographs. Payload sniffs the bytes as well as
+    // trusting the declared type, and refuses a file whose content is not on
+    // the list — a 3GP from an older Android labelled `.mp4`, say. Going first
+    // means that refusal orphans nothing, and it is answered in the same words
+    // as the form's own check rather than as "something went wrong".
+    let videoId: number | undefined
+    if (video) {
+      try {
+        const created = await payload.create({
+          collection: 'memory-videos',
+          data: {
+            // Screen readers read this in place of watching. A serviceable
+            // default until Alex describes what the clip shows.
+            description: `A video shared by ${parsed.data.fromName}`,
+          },
+          file: {
+            data: Buffer.from(await video.arrayBuffer()),
+            mimetype: video.type,
+            name: video.name,
+            size: video.size,
+          },
+        })
+        videoId = created.id
+      } catch (error) {
+        if (!(error instanceof ValidationError)) throw error
+        logRejection('video-content')
+        return reply.invalid({ video: VIDEO_TYPE_MESSAGE })
+      }
+    }
 
     const photoIds: number[] = []
     for (const photo of photos) {
@@ -251,6 +311,7 @@ export async function POST(request: Request): Promise<Response> {
       data: {
         ...parsed.data,
         photos: photoIds,
+        video: videoId,
         // Stated rather than left to the field default. The default is right,
         // and this is the single most consequential value in the request: it is
         // what stands between a public page and whatever anyone chose to send.

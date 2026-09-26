@@ -72,6 +72,7 @@ export interface Config {
     photographs: Photograph;
     memories: Memory;
     'memory-photos': MemoryPhoto;
+    'memory-videos': MemoryVideo;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -84,6 +85,7 @@ export interface Config {
     photographs: PhotographsSelect<false> | PhotographsSelect<true>;
     memories: MemoriesSelect<false> | MemoriesSelect<true>;
     'memory-photos': MemoryPhotosSelect<false> | MemoryPhotosSelect<true>;
+    'memory-videos': MemoryVideosSelect<false> | MemoryVideosSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -271,6 +273,10 @@ export interface Memory {
    */
   photos?: (number | MemoryPhoto)[] | null;
   /**
+   * A video they attached, if any. Play it before approving — clear this to publish the memory without it.
+   */
+  video?: (number | null) | MemoryVideo;
+  /**
    * Optional, and never shown on the site. Only so you can reply to them.
    */
   email?: string | null;
@@ -326,6 +332,32 @@ export interface MemoryPhoto {
   };
 }
 /**
+ * Videos people attached to their memories.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "memory-videos".
+ */
+export interface MemoryVideo {
+  id: number;
+  /**
+   * What the video shows. Read aloud by screen readers in place of watching it. The submitter did not write this — improve it when you approve the memory.
+   */
+  description?: string | null;
+  prefix?: string | null;
+  _objectKey?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -368,6 +400,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'memory-photos';
         value: number | MemoryPhoto;
+      } | null)
+    | ({
+        relationTo: 'memory-videos';
+        value: number | MemoryVideo;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -513,6 +549,7 @@ export interface MemoriesSelect<T extends boolean = true> {
   title?: T;
   body?: T;
   photos?: T;
+  video?: T;
   email?: T;
   approvedBy?: T;
   updatedAt?: T;
@@ -561,6 +598,26 @@ export interface MemoryPhotosSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "memory-videos_select".
+ */
+export interface MemoryVideosSelect<T extends boolean = true> {
+  description?: T;
+  prefix?: T;
+  _objectKey?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

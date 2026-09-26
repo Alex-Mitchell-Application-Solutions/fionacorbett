@@ -10,15 +10,26 @@ import { Text } from '@/components/primitives/Text'
 import {
   MAX_MEMORY_PHOTOS,
   MAX_MEMORY_PHOTO_BYTES,
+  MAX_MEMORY_VIDEO_BYTES,
   MEMORY_PHOTO_ACCEPT,
+  MEMORY_VIDEO_ACCEPT,
   formatMegabytes,
-  isAttachedPhoto,
+  isAttachedFile,
+  videoProblem,
 } from '@/lib/memories/limits'
 import {
   type MemoryFieldErrors,
   memorySubmissionSchema,
   toFieldErrors,
 } from '@/lib/memories/schema'
+
+/**
+ * The file inputs' styling. The recipe's padding is for a text input and leaves
+ * the file button crowded against the border. One literal, so the photograph
+ * and video inputs cannot drift apart.
+ */
+const FILE_INPUT_CLASS =
+  'px-3 py-2 file:mr-4 file:rounded-sm file:border file:border-line-control file:bg-surface-sunken file:px-4 file:py-2 file:text-sm file:text-text'
 
 /**
  * The memory form.
@@ -76,6 +87,12 @@ export function MemoryForm({
   const [fieldErrors, setFieldErrors] = useState<MemoryFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [state, setState] = useState<'editing' | 'sending' | 'sent'>('editing')
+  /**
+   * Whether what is being sent includes a video. A 100 MB upload on mobile data
+   * takes minutes, and without saying so the page looks like it has hung —
+   * which is when someone gives up and closes it.
+   */
+  const [sendingVideo, setSendingVideo] = useState(false)
   const thanksRef = useRef<HTMLHeadingElement>(null)
   /**
    * The hidden token input, written to directly rather than held in state.
@@ -201,7 +218,7 @@ export function MemoryForm({
 
     // The same predicate the endpoint uses, so the client cannot accept what the
     // server rejects or vice versa.
-    const realPhotos = data.getAll('photos').filter(isAttachedPhoto)
+    const realPhotos = data.getAll('photos').filter(isAttachedFile)
 
     if (realPhotos.length > MAX_MEMORY_PHOTOS) {
       setFieldErrors({ photos: `Please attach no more than ${MAX_MEMORY_PHOTOS} photographs.` })
@@ -214,7 +231,16 @@ export function MemoryForm({
       return
     }
 
+    // The same check, in the same words, as the endpoint.
+    const realVideos = data.getAll('video').filter(isAttachedFile)
+    const videoError = videoProblem(realVideos)
+    if (videoError) {
+      setFieldErrors({ video: videoError })
+      return
+    }
+
     setFieldErrors({})
+    setSendingVideo(realVideos.length > 0)
     setState('sending')
 
     try {
@@ -324,9 +350,26 @@ export function MemoryForm({
               type="file"
               multiple
               accept={MEMORY_PHOTO_ACCEPT}
-              // The recipe's padding is for a text input and leaves the file
-              // button crowded against the border.
-              className={`${props.className} px-3 py-2 file:mr-4 file:rounded-sm file:border file:border-line-control file:bg-surface-sunken file:px-4 file:py-2 file:text-sm file:text-text`}
+              className={`${props.className} ${FILE_INPUT_CLASS}`}
+            />
+          )}
+        </Field>
+
+        {/* In plain view beside the photographs, for the same reason. One
+            only: a memory is something to read, and the video sits beside it
+            rather than replacing it. */}
+        <Field
+          name="video"
+          label="A video"
+          hint={`One short clip, up to ${formatMegabytes(MAX_MEMORY_VIDEO_BYTES)} — about a minute from a phone.`}
+          error={fieldErrors.video}
+        >
+          {(props) => (
+            <input
+              {...props}
+              type="file"
+              accept={MEMORY_VIDEO_ACCEPT}
+              className={`${props.className} ${FILE_INPUT_CLASS}`}
             />
           )}
         </Field>
@@ -383,6 +426,14 @@ export function MemoryForm({
         <Button type="submit" variant="primary" size="lg" disabled={state === 'sending'}>
           {state === 'sending' ? 'Sending…' : 'Send it'}
         </Button>
+        {/* A live region, so a screen reader hears it as well as a sighted
+            person seeing it. Rendered empty rather than conditionally, because
+            a region inserted along with its text is often not announced. */}
+        <p role="status" className="mt-4 font-body text-sm text-text-muted empty:mt-0">
+          {state === 'sending' && sendingVideo
+            ? 'A video can take a minute or two to send. Please keep this page open.'
+            : null}
+        </p>
         <Text size="sm" className="mt-4">
           Alex reads everything before it goes up, so it will not appear straight away.
         </Text>

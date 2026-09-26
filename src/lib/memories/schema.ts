@@ -80,7 +80,7 @@ export const memorySubmissionSchema = z.object({
 export type MemorySubmission = z.infer<typeof memorySubmissionSchema>
 
 /** Field-keyed messages, the shape the form renders directly. */
-export type MemoryFieldErrors = Partial<Record<keyof MemorySubmission | 'photos', string>>
+export type MemoryFieldErrors = Partial<Record<keyof MemorySubmission | 'photos' | 'video', string>>
 
 /**
  * Flatten a Zod failure to one message per field.

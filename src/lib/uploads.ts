@@ -12,9 +12,22 @@
  * now a single edit rather than three, and `uploads.test.ts` fails if a
  * collection with an `upload` block is not in the list.
  */
-export const UPLOAD_COLLECTIONS = ['media', 'memory-photos'] as const
+export const UPLOAD_COLLECTIONS = ['media', 'memory-photos', 'memory-videos'] as const
 
 export type UploadCollection = (typeof UPLOAD_COLLECTIONS)[number]
+
+/**
+ * The upload collections that hold images, and so the only ones next/image may
+ * optimise.
+ *
+ * A subset, not the whole list: `memory-videos` must go to the bucket like
+ * everything else but has no business reaching the image optimiser, where it
+ * would only widen what a stranger can feed through it.
+ */
+export const IMAGE_UPLOAD_COLLECTIONS = [
+  'media',
+  'memory-photos',
+] as const satisfies readonly UploadCollection[]
 
 /**
  * Where Payload serves each collection's files from.
@@ -34,5 +47,5 @@ export function uploadFilePattern(slug: UploadCollection): string {
  * a resource amplifier for anyone who notices.
  */
 export function uploadImagePatterns(): { pathname: string }[] {
-  return UPLOAD_COLLECTIONS.map((slug) => ({ pathname: uploadFilePattern(slug) }))
+  return IMAGE_UPLOAD_COLLECTIONS.map((slug) => ({ pathname: uploadFilePattern(slug) }))
 }

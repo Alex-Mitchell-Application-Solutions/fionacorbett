@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import { UPLOAD_COLLECTIONS, uploadImagePatterns } from '@/lib/uploads'
+import { IMAGE_UPLOAD_COLLECTIONS, UPLOAD_COLLECTIONS, uploadImagePatterns } from '@/lib/uploads'
 
 /**
  * Guards a failure that no other check catches.
@@ -54,15 +54,25 @@ describe('UPLOAD_COLLECTIONS', () => {
     const found = uploadCollectionsInSource()
     expect(found).toContain('media')
     expect(found).toContain('memory-photos')
+    expect(found).toContain('memory-videos')
   })
 })
 
 describe('uploadImagePatterns', () => {
-  it('produces one localPatterns entry per upload collection', () => {
+  it('produces one localPatterns entry per image collection', () => {
     expect(uploadImagePatterns()).toEqual([
       { pathname: '/api/media/file/**' },
       { pathname: '/api/memory-photos/file/**' },
     ])
+  })
+
+  it('never lets a video collection reach the image optimiser', () => {
+    expect(IMAGE_UPLOAD_COLLECTIONS).not.toContain('memory-videos')
+    expect(uploadImagePatterns()).not.toContainEqual({ pathname: '/api/memory-videos/file/**' })
+  })
+
+  it('only lists image collections that are also upload collections', () => {
+    for (const slug of IMAGE_UPLOAD_COLLECTIONS) expect(UPLOAD_COLLECTIONS).toContain(slug)
   })
 
   it('is what next.config.ts actually uses, rather than a second copy of it', () => {

@@ -94,7 +94,8 @@ it. Put it here.
   The short form is for saying out loud and printing; the long one is canonical,
   because a bare `/share` in a forwarded message tells the recipient nothing.
 - ✅ **Fields**, in this order: name and the memory (both required), up to six
-  photographs (optional, kept in plain view), then an "Add more if you like"
+  photographs and one video (both optional, kept in plain view), then an "Add
+  more if you like"
   `<details>` holding how they know Fiona, a title and an email address that is
   never shown. The section opens itself if one of its fields has an error.
 - ✅ **Approval-gated.** New memories are `pending` and appear nowhere —
@@ -115,8 +116,24 @@ it. Put it here.
   JavaScript has one point of failure between a person's memory of Fiona and the
   database. Modelled on luxury-gardens' consultation form.
 
-- ✅ **Four layers in front of the write** — rate limit, honeypot, signed dwell
-  token, shared Zod schema. See [The submission path](#the-submission-path).
+- ✅ **Layers in front of the write** — rate limit, declared-size ceiling,
+  honeypot, signed dwell token, shared Zod schema, then the photo and video
+  checks. See [The submission path](#the-submission-path).
+- ✅ **One video per memory**, up to 100 MB (about a minute from a phone), in
+  `memory-videos`. MP4, MOV or WebM by exact type, **stored as sent**: no
+  transcoding and no poster frame. It plays in the browser's own `<video>`
+  through `PayloadVideo`, a server component, in a fixed 16:9 box, so a portrait
+  clip is pillarboxed. An iPhone `.mov` is usually HEVC, which plays wherever the
+  device can decode it. That is most devices, not all, and it is why Alex plays
+  each video before approving. No captions: a guest's clip arrives without them,
+  and the written memory beside it carries the context. Accepted rather than
+  overlooked.
+- 🔵 **Upload progress for a video.** `fetch` has no upload progress event;
+  getting one means `XMLHttpRequest` in `MemoryForm`. For now the sending state
+  says a video can take a minute or two.
+- 🔵 **Transcoding video to H.264**, for the devices that cannot play HEVC. It
+  means ffmpeg in the image and a background job, so it waits until a clip that
+  won't play actually turns up.
 - ✅ **No CAPTCHA, deliberately.** Turnstile was built and removed on 20
   September 2026. It cost more than it protected: a single mistyped variable
   name silently discarded every submission, and the widget was one more thing to
@@ -202,7 +219,7 @@ src/
     (payload)/             admin and Payload's API. Mostly generated
   collections/             Payload schema and access control
   components/
-    primitives/            Button, Heading, Text, Field, PayloadImage, …
+    primitives/            Button, Heading, Text, Field, PayloadImage, PayloadVideo, …
     layout/                SiteHeader, HeaderShell, NavDrawer, NavTrigger,
                            SiteFooter, PageHero
     gallery/ memories/     feature components
@@ -282,10 +299,13 @@ people read messages they wrote to Fiona.
 
 ## Schema and data-layer conventions
 
-- **Two upload collections, deliberately.** `media` is what Alex uploads and
-  `memory-photos` is what strangers attach. One collection would have to be
-  governed by whichever needs the stricter rule, and in practice the strict rule
-  gets relaxed the first time it is inconvenient for the trusted case.
+- **Three upload collections, deliberately.** `media` is what Alex uploads,
+  `memory-photos` and `memory-videos` are what strangers attach. One collection
+  would have to be governed by whichever needs the stricter rule, and in practice
+  the strict rule gets relaxed the first time it is inconvenient for the trusted
+  case. The same goes for photographs and video: each has its own mime list and
+  cap. `memory-videos` is in `UPLOAD_COLLECTIONS`, so it goes to the bucket, but
+  not in `IMAGE_UPLOAD_COLLECTIONS`, so the image optimiser never sees it.
 - **Access control is declarative and lives on the collection.** `read` on
   `memories` returns a query constraint rather than a boolean, so it applies to
   `findByID` as well as to a list — that is what makes a guessed id a 404 rather
@@ -330,12 +350,28 @@ Cheapest first, so a bot costs as little as possible:
 | #   | Layer         | Rejects                                      | Response              |
 | --- | ------------- | -------------------------------------------- | --------------------- |
 | 1   | IP rate limit | 5 per 10 minutes per address                 | 429 with a message    |
+| 1a  | Declared size | `Content-Length` over every cap combined     | 413 with a message    |
 | 2   | Honeypot      | an off-screen field bots fill                | silent 200            |
 | 3   | Dwell token   | HMAC'd timestamp: forged, replayed, too fast | silent 200            |
 | 4   | Zod schema    | the same one the form used                   | 400 with field errors |
 | 5   | Photo checks  | count, size, exact mime type                 | 400 with a message    |
+| 5a  | Video checks  | more than one, over 100 MB, exact mime type  | 400 with a message    |
 
 Non-obvious things that matter, all of which have bitten somewhere:
+
+- **The declared size is checked before the body is read.** `formData()` buffers
+  everything, so a 400 MB post would otherwise be in memory before any layer had
+  run. A missing `Content-Length` is let through and logged rather than refused:
+  this guards memory, not authenticity, and every per-file cap still applies.
+  A 100 MB video costs roughly 200–300 MB while it is being saved. The service's
+  limit is 24 GB (read with `railway metrics --memory` on 26 September 2026, when
+  the peak over a week was 224 MB), so this has headroom. If the cap rises by
+  an order of magnitude, the fix is streaming the body to S3.
+- **Payload sniffs upload bytes as well as the declared type**, and refuses a
+  file whose content is not on the collection's list — a 3GP labelled `.mp4`,
+  for one. The video is written before the photographs so that refusal orphans
+  nothing, and the endpoint answers it with the same field error as the form's
+  own check. Uncaught, it was a generic 500.
 
 - **Bot rejections return 200 `{ok: true}`.** Telling a scraper which layer
   caught it is free tuning information. A human never trips these.
@@ -371,7 +407,7 @@ Non-obvious things that matter, all of which have bitten somewhere:
   for `<input type="file">` with nothing chosen: empty name, zero bytes, no
   content type. An `instanceof File` check treats it as a file, the mime check
   then rejects it, and someone who attached no photograph is told "Photographs
-  only, please". `isAttachedPhoto` in `limits.ts` is the one predicate both sides
+  only, please". `isAttachedFile` in `limits.ts` is the one predicate both sides
   use — the client had the filter and the server did not, which is exactly how
   this shipped.
 - **A `NEXT_PUBLIC_` value must carry the prefix in full.** `PUBLIC_FOO` is not
@@ -540,7 +576,7 @@ All of these, every time:
 This site holds photographs of a private person across sixty years, and messages
 written about her by people who expected an audience of her family.
 
-- **Collected:** what a submitter types, any photographs they attach, and their
+- **Collected:** what a submitter types, any photographs or video they attach, and their
   email address if they give one. Nothing else. No cookies beyond Payload's admin
   session, no analytics, and no third-party scripts at all.
 - **Where it goes:** Postgres and an S3 bucket, both on Railway, both private to
@@ -550,9 +586,10 @@ written about her by people who expected an audience of her family.
 - **Never:** no PII in logs. No email addresses in any public response. No
   indexing. No selling, sharing or exporting anything anyone wrote.
 
-**Known limit, accepted rather than overlooked:** a photograph attached to a
-still-pending memory is retrievable by anyone who knows its URL, because
-`memory-photos` has public read and next/image fetches it as an ordinary URL.
+**Known limit, accepted rather than overlooked:** a photograph or video attached
+to a still-pending memory is retrievable by anyone who knows its URL, because
+`memory-photos` and `memory-videos` have public read and the page fetches them as
+ordinary URLs.
 Nothing links to it and the filename is not published. Signing every image URL
 was judged not worth it on a site whose purpose is showing photographs to people
 who were sent a link. If that judgement changes, it changes here first.
@@ -578,7 +615,12 @@ Every 🧱 item, so the path to production is visible in one place.
 - 🧱 **Accessibility audit on a real device**, with a screen reader, at 320px,
   and at 200% zoom. The audience skews older; this is not a box to tick.
 - 🧱 **Test the submission path from a phone on mobile data**, including a HEIC
-  photograph straight from an iPhone camera roll.
+  photograph straight from an iPhone camera roll and a video of about a minute.
+  Record the `File.type` an iPhone `.mov`, an Android `.mp4` and a `.mov` on
+  Windows Chrome report. If one reports an empty type, a real video is refused
+  with "Videos only". Once deployed, confirm a video on `/memories` plays in
+  real Chrome, not only Safari, and that the bucket answers Range requests
+  with 206.
 - 🧱 **Back up the database and the bucket.** Railway's Postgres has backups;
   confirm they are on and confirm the bucket is covered too. The photographs may
   be the only digital copies in existence.

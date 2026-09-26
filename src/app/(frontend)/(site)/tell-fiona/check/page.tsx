@@ -20,11 +20,11 @@ export default function CheckPage() {
     <Outcome title="Something needs changing">
       <OutcomeText>
         That did not quite go through. Usually it is a missing name, or a message that is only a
-        word or two long.
+        word or two long. Now and then it is a photograph or video in a format the form cannot take.
       </OutcomeText>
       <OutcomeText>
         Press your browser&rsquo;s back button — everything you wrote will still be there — then
-        check those two and send it again.
+        check those and send it again.
       </OutcomeText>
     </Outcome>
   )

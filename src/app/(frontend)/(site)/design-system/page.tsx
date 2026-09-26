@@ -6,6 +6,7 @@ import { Container } from '@/components/primitives/Container'
 import { Eyebrow } from '@/components/primitives/Eyebrow'
 import { Field } from '@/components/primitives/Field'
 import { Heading } from '@/components/primitives/Heading'
+import { PayloadVideo } from '@/components/primitives/PayloadVideo'
 import { Rule } from '@/components/primitives/Rule'
 import { Text } from '@/components/primitives/Text'
 
@@ -342,6 +343,42 @@ export default function DesignSystemPage() {
             {(props) => <textarea {...props} rows={4} className={`${props.className} resize-y`} />}
           </Field>
         </div>
+      </Section>
+
+      <Section title="PayloadVideo" importPath="src/components/primitives/PayloadVideo.tsx">
+        {/* Test patterns, not anyone's footage. Served from public/showcase so
+            the showcase needs no database row. */}
+        <Row label="A landscape clip fills the reserved 16:9 box">
+          <Entry code='video={{ url: "/showcase/landscape.mp4" }} label="Video from Margaret"'>
+            <div className="w-full max-w-feature">
+              <PayloadVideo
+                video={{ url: '/showcase/landscape.mp4' }}
+                label="Video from Margaret"
+              />
+            </div>
+          </Entry>
+        </Row>
+        <Row label="A portrait clip is pillarboxed in the same box, so nothing shifts">
+          <Entry code='video={{ url: "/showcase/portrait.mp4", description: "…" }}'>
+            <div className="w-full max-w-feature">
+              <PayloadVideo
+                video={{
+                  url: '/showcase/portrait.mp4',
+                  description: 'A test pattern, filmed upright on a phone',
+                }}
+                label="Video from Margaret"
+              />
+            </div>
+          </Entry>
+        </Row>
+        <Row label="States">
+          <Entry code="video={42} · an unresolved id renders nothing">
+            <Text size="sm">
+              Nothing is rendered — a player with no source reads as broken. It means the query
+              depth at the call site is too shallow.
+            </Text>
+          </Entry>
+        </Row>
       </Section>
 
       <Section title="Rule" importPath="src/components/primitives/Rule.tsx">

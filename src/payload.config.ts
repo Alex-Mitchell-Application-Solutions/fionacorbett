@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url'
 import { Media } from './collections/Media'
 import { Memories } from './collections/Memories'
 import { MemoryPhotos } from './collections/MemoryPhotos'
+import { MemoryVideos } from './collections/MemoryVideos'
 import { Photographs } from './collections/Photographs'
 import { Users } from './collections/Users'
 import { SiteSettings } from './globals/SiteSettings'
@@ -35,7 +36,7 @@ export default buildConfig({
       robots: { index: false, follow: false },
     },
   },
-  collections: [Users, Media, Photographs, Memories, MemoryPhotos],
+  collections: [Users, Media, Photographs, Memories, MemoryPhotos, MemoryVideos],
   globals: [SiteSettings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

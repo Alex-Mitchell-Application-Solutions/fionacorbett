@@ -19,11 +19,12 @@ blob-report/
 .playwright/
 
 # Local uploads. Without S3 configured, Payload writes files to a directory
-# beside the collection slug at the repository root — ./media and
-# ./memory-photos. These are real uploads on a developer's machine and
+# beside the collection slug at the repository root — ./media,
+# ./memory-photos and ./memory-videos. These are real uploads on a developer's machine and
 # generated placeholders after `pnpm run seed`; neither belongs in git.
 /media/
 /memory-photos/
+/memory-videos/
 
 # Secrets. The committed template is env.example, without a leading dot —
 # matching luxury-gardens — so it is not matched by either pattern here and

@@ -135,6 +135,15 @@ export const Memories: CollectionConfig = {
       admin: { description: 'Anything they attached. Delete any you would rather not publish.' },
     },
     {
+      name: 'video',
+      type: 'upload',
+      relationTo: 'memory-videos',
+      admin: {
+        description:
+          'A video they attached, if any. Play it before approving — clear this to publish the memory without it.',
+      },
+    },
+    {
       name: 'email',
       type: 'email',
       access: {
