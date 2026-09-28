@@ -85,6 +85,14 @@ export function PayloadImage({
   if (!media || typeof media === 'number') return null
   if (!media.url) return null
 
+  // An image is cropped whenever its box is a different shape from the
+  // photograph — by `fill`, or by `object-cover` in an aspect-ratio box as the
+  // gallery grid does. By default the crop is the centre, which on a two-person
+  // shot is the gap between them. The focal point set in the admin moves it onto
+  // the subject instead. On an uncropped image `object-position` does nothing,
+  // so it is safe to set on every one. Unset, it falls back to the centre.
+  const objectPosition = `${media.focalX ?? 50}% ${media.focalY ?? 50}%`
+
   const common = {
     src: media.url,
     // `?? ''` covers the memory-photos case, where alt is optional because a
@@ -98,17 +106,15 @@ export function PayloadImage({
   }
 
   if (fill) {
-    // A filled image is cropped to its box, and the box's shape changes with the
-    // screen: a hero is wide on a laptop and a tall narrow slice on a phone. By
-    // default that slice is the centre of the photograph, which on a two-person
-    // shot is the gap between them. The focal point set in the admin moves the
-    // crop onto the subject instead. Unset, it falls back to the centre.
-    const x = media.focalX ?? 50
-    const y = media.focalY ?? 50
-    return (
-      <NextImage {...common} fill style={{ objectFit: 'cover', objectPosition: `${x}% ${y}%` }} />
-    )
+    return <NextImage {...common} fill style={{ objectFit: 'cover', objectPosition }} />
   }
 
-  return <NextImage {...common} width={media.width ?? 1600} height={media.height ?? 1200} />
+  return (
+    <NextImage
+      {...common}
+      width={media.width ?? 1600}
+      height={media.height ?? 1200}
+      style={{ objectPosition }}
+    />
+  )
 }

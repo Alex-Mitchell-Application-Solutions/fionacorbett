@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { revalidateGallery, revalidateSite } from '@/lib/revalidate'
+
 /**
  * Every photograph Alex uploads: the gallery, the page heroes, the site's own
  * imagery.
@@ -22,6 +24,14 @@ export const Media: CollectionConfig = {
     create: ({ req }) => Boolean(req.user),
     update: ({ req }) => Boolean(req.user),
     delete: ({ req }) => Boolean(req.user),
+  },
+  hooks: {
+    // A photograph and the site settings embed their image at depth 2, so the
+    // cached pages carry this document's alt and focal point. Editing either
+    // here changes no photograph and no setting, and without these the change
+    // sits invisible until the next deploy.
+    afterChange: [revalidateGallery, revalidateSite],
+    afterDelete: [revalidateGallery, revalidateSite],
   },
   fields: [
     {
