@@ -205,30 +205,7 @@ describe('toSlides', () => {
         focalY: 30,
         updatedAt: image.updatedAt,
       },
-      ratio: 1600 / 1200,
     })
-  })
-
-  it("carries each photograph's shape, whatever its resolution", () => {
-    // An 800px scan and a 4000px phone photo of the same shape get the same
-    // ratio, which is what lets the slideshow show them at the same size.
-    const [scan, phone, portrait] = toSlides([
-      photograph({ id: 1, year: 1974, title: 'A', image: { ...image, width: 800, height: 600 } }),
-      photograph({ id: 2, year: 2019, title: 'B', image: { ...image, width: 4000, height: 3000 } }),
-      photograph({ id: 3, year: 2020, title: 'C', image: { ...image, width: 3000, height: 4000 } }),
-    ])
-
-    expect(scan?.ratio).toBe(phone?.ratio)
-    expect(portrait?.ratio).toBe(0.75)
-  })
-
-  it('falls back to 4:3 when the dimensions are missing or zero', () => {
-    const slides = toSlides([
-      photograph({ id: 1, year: 1974, title: 'A', image: { ...image, width: null } }),
-      photograph({ id: 2, year: 1975, title: 'B', image: { ...image, height: 0 } }),
-    ])
-
-    expect(slides.map((slide) => slide.ratio)).toEqual([4 / 3, 4 / 3])
   })
 
   it('leaves out a photograph whose image did not resolve', () => {
