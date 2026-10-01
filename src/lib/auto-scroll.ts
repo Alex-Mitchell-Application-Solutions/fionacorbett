@@ -13,8 +13,8 @@
  *   top     back at the top after the jump, resting before it sets off again
  */
 
-/** A slow reading pace: a gallery row of about 500px takes twelve seconds. */
-export const AUTO_SCROLL_PX_PER_SECOND = 40
+/** A slow reading pace: a gallery row of about 500px takes ten seconds. */
+export const AUTO_SCROLL_PX_PER_SECOND = 50
 export const AUTO_SCROLL_END_HOLD_MS = 4000
 export const AUTO_SCROLL_TOP_HOLD_MS = 3000
 /**
@@ -25,7 +25,7 @@ export const AUTO_SCROLL_TOP_HOLD_MS = 3000
 export const AUTO_SCROLL_MAX_FRAME_MS = 100
 
 export type AutoScrollState = {
-  /** Fractional, unlike scrollY: at 40px a second most frames move under a pixel. */
+  /** Fractional, unlike scrollY: at 50px a second most frames move under a pixel. */
   position: number
   phase: 'moving' | 'end' | 'top'
   /** Time spent in the current hold. */

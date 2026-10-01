@@ -44,7 +44,12 @@ describe('stepAutoScroll', () => {
   })
 
   it('covers a second of frames at the pace per second', () => {
-    const { state } = run(startAutoScroll(0), 5000, (s) => s.heldMs === 0 && s.position >= 39.9, 70)
+    const { state } = run(
+      startAutoScroll(0),
+      5000,
+      (s) => s.heldMs === 0 && s.position >= AUTO_SCROLL_PX_PER_SECOND - 0.1,
+      70,
+    )
     expect(state.position).toBeCloseTo(AUTO_SCROLL_PX_PER_SECOND, 0)
   })
 

@@ -123,7 +123,7 @@ export function GalleryPlayback({
     setAutoScrolling(false)
   }, [])
 
-  // The scroll. One frame loop, the position kept as a fraction because at 40px
+  // The scroll. One frame loop, the position kept as a fraction because at 50px
   // a second most frames move less than a pixel and scrollY would round every
   // one of them to nothing. Any sign of the reader taking over stops it; the
   // scroll's own movement is not listened for, only input.

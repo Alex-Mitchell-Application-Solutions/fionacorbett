@@ -96,7 +96,7 @@ it. Put it here.
   menu drawer, with only the current photograph and its two neighbours in the
   document. Built without a proposal at Alex's request.
 - ✅ **A slow scroll down `/gallery` as it is**, from "Scroll through slowly"
-  beside the slideshow link, for a screen left running at the party. 40px a
+  beside the slideshow link, for a screen left running at the party. 50px a
   second, fixed in `src/lib/auto-scroll.ts`; it rests four seconds at the
   bottom, jumps to the top, rests three and sets off again. Any touch, click,
   wheel or key stops it, and a "Stop scrolling" button holds the corner and
