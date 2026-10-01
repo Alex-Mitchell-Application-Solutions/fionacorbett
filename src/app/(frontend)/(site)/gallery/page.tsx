@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 import { DecadeSection } from '@/components/gallery/DecadeSection'
-import { GallerySlideshow } from '@/components/gallery/GallerySlideshow'
+import { GalleryPlayback } from '@/components/gallery/GalleryPlayback'
 import { PageHero } from '@/components/layout/PageHero'
 import { Container } from '@/components/primitives/Container'
 import { Text } from '@/components/primitives/Text'
@@ -42,12 +42,13 @@ export default async function GalleryPage() {
               </p>
               {/* A client component above the fold, which the standards
                   otherwise forbid. The reason for the rule is the hero image
-                  waiting on hydration; this renders as a plain anchor, the
+                  waiting on hydration; this renders as plain anchors, the
                   image does not depend on it, and the menu trigger beside it
                   in the header is the same arrangement. */}
-              <GallerySlideshow
+              <GalleryPlayback
                 slides={slides}
                 intervalMs={slideshowIntervalMs(settings.slideshowSeconds)}
+                scrollStartHref={`#${decades[0]?.slug ?? ''}`}
               />
             </div>
           ) : null

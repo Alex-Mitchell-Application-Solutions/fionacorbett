@@ -92,9 +92,17 @@ it. Put it here.
   pause takes focus on opening (WCAG 2.2.2); arrow keys and a swipe also step.
   The clock does not start until the photograph has loaded, so a slow phone
   does not skip past a scan it never drew. Without JavaScript the link goes to
-  the first photograph's page. `GallerySlideshow`, a modal `<dialog>` like the
+  the first photograph's page. `GalleryPlayback`, a modal `<dialog>` like the
   menu drawer, with only the current photograph and its two neighbours in the
   document. Built without a proposal at Alex's request.
+- ✅ **A slow scroll down `/gallery` as it is**, from "Scroll through slowly"
+  beside the slideshow link, for a screen left running at the party. 40px a
+  second, fixed in `src/lib/auto-scroll.ts`; it rests four seconds at the
+  bottom, jumps to the top, rests three and sets off again. Any touch, click,
+  wheel or key stops it, and a "Stop scrolling" button holds the corner and
+  takes focus while it runs (WCAG 2.2.2). Without JavaScript the link goes to
+  the first decade. The same `GalleryPlayback` component as the slideshow, so
+  it adds no client component. Built without a proposal at Alex's request.
 - 🔵 **View Transitions between photographs.** Would give back the sense of
   staying in place that an overlay has, without giving up the addressable route.
   Deferred because it is an enhancement to a page that already works.
@@ -238,6 +246,7 @@ src/
   globals/SiteSettings.ts  hero images and copy, editable without a deploy
   lib/
     gallery.ts             decade grouping. The gallery's whole data model
+    auto-scroll.ts         the gallery's slow scroll, as a pure step function
     content.ts             every read the public pages make
     revalidate.ts          cache invalidation as Payload hooks
     memories/              limits, shared Zod schema
@@ -441,8 +450,8 @@ Checkable. A reviewer should be able to point at a line.
 - **Nothing above the fold may be a client component.** React would have to
   download, parse and hydrate before the image request started. On a site that is
   almost entirely photographs, that is the whole performance story. The two
-  exceptions are controls, not content: the menu trigger and the slideshow's
-  play link render as plain HTML first and the hero image does not wait on them.
+  exceptions are controls, not content: the menu trigger and the gallery's
+  two play links render as plain HTML first and the hero image does not wait on them.
 - **Exactly one preloaded image per page.** More than one and they compete for
   bandwidth, which makes LCP worse rather than better.
 - **Every image goes through `PayloadImage`**, which takes width and height from
@@ -450,7 +459,7 @@ Checkable. A reviewer should be able to point at a line.
   bug.
 - **`sizes` is stated on every image** and should match the grid it sits in.
 - **There are exactly four client components on this site**: `MemoryForm`,
-  `NavDrawer`, `HeaderShell` and `GallerySlideshow`. `HeaderShell` holds one boolean — scrolled or
+  `NavDrawer`, `HeaderShell` and `GalleryPlayback`. `HeaderShell` holds one boolean — scrolled or
   not — and header.css does the rest. The drawer is a modal `<dialog>` holding one boolean; its links
   are rendered on the server and passed in, so they cost no client JavaScript.
   Adding a fifth needs a reason.
