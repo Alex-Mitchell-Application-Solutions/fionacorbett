@@ -162,6 +162,17 @@ it. Put it here.
 - ✅ **Plain text, not rich text.** A rich text editor for a stranger means
   storing markup a stranger supplied, which means sanitising it correctly
   forever. Line breaks are all this needs.
+- ✅ **A translation, for a memory written in another language.** `translation`
+  on `memories`, written by Alex in the admin and never by the sender: the form
+  has no such field and the submission schema strips keys it does not know (a
+  test pins that). A memory that has one shows a "See translation" control
+  above the text, which swaps the text in place and becomes "See original". A
+  `<details>`, so the browser does the toggling: no client JavaScript, works
+  with it off, announced as expanded or collapsed. `memory-card.css` does the
+  swap. Built without a proposal at Alex's request.
+- 🔵 **Mark the language of a memory's original.** With no `lang` on it, a
+  screen reader reads the original in English and the browser hyphenates it by
+  English rules. Needs a language field beside `translation`.
 - ✅ **A thank-you state that stands on its own.** Confirms it is saved, says it
   is read before it goes up so nobody resends, and offers "write another" as a
   button that resets the form in place. Focus moves to the heading, because the
@@ -262,6 +273,7 @@ src/
     header.css             the header receding over a hero, ported from luxury-gardens
     nav-drawer.css         the menu drawer, ported from luxury-gardens
     gallery-slideshow.css  the slideshow dialog
+    memory-card.css        a memory's translation toggle
   migrations/              generated, committed, applied by the deploy
 scripts/seed.ts            bootstrap an empty database
 .railway/railway.ts        deploy config as code. NOT applied on push

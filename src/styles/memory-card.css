@@ -1,0 +1,30 @@
+/**
+ * A memory's translation toggle (MemoryCard).
+ *
+ * A <details> whose summary is the control. Closed, the original shows below it;
+ * open, the translation shows inside it and the original, its next sibling, is
+ * hidden — so one is always on screen and never both. The label is two spans,
+ * one per state, because a summary's text cannot change without script.
+ */
+@layer components {
+  .memory-translation > summary {
+    /* Not a list item, so no disclosure triangle beside a control that already
+     * says what it does. */
+    list-style: none;
+    width: fit-content;
+    cursor: pointer;
+  }
+
+  .memory-translation > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .memory-translation:not([open]) .memory-translation-hide,
+  .memory-translation[open] .memory-translation-show {
+    display: none;
+  }
+
+  .memory-translation[open] + .memory-original {
+    display: none;
+  }
+}

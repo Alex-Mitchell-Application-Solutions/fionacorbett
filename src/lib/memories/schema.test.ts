@@ -105,6 +105,20 @@ describe('memorySubmissionSchema', () => {
     expect(memorySubmissionSchema.parse({ ...VALID, body }).body).toBe(body)
   })
 
+  it('drops fields the form does not have, so a stranger cannot set them', () => {
+    // The endpoint spreads the parsed data into the write. Anything the schema
+    // passed through would be stored: a status of approved, or a translation
+    // that only Alex is meant to write.
+    const result = memorySubmissionSchema.safeParse({
+      ...VALID,
+      status: 'approved',
+      translation: 'Not theirs to write',
+    })
+    expect(result.success).toBe(true)
+    expect(result.data).not.toHaveProperty('status')
+    expect(result.data).not.toHaveProperty('translation')
+  })
+
   it('stores angle brackets verbatim rather than mangling them', () => {
     // React escapes on render and the field is plain text, so there is nothing
     // to sanitise here. This test exists to record that as the decision: if

@@ -128,6 +128,20 @@ export const Memories: CollectionConfig = {
       admin: { description: 'The memory itself. Plain text — line breaks are kept.' },
     },
     {
+      // Written by Alex in the admin, never by the person who sent the memory:
+      // the form has no such field and the submission schema strips any key it
+      // does not know, so a stranger cannot set this.
+      name: 'translation',
+      type: 'textarea',
+      // Longer than the body's cap, because a translation usually runs longer
+      // than the original.
+      maxLength: 8000,
+      admin: {
+        description:
+          'Optional. A translation, for a memory written in another language. When filled in, the memory shows a "See translation" button that swaps between the two. Plain text — line breaks are kept.',
+      },
+    },
+    {
       name: 'photos',
       type: 'upload',
       relationTo: 'memory-photos',

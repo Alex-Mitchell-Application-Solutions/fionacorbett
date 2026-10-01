@@ -269,6 +269,10 @@ export interface Memory {
    */
   body: string;
   /**
+   * Optional. A translation, for a memory written in another language. When filled in, the memory shows a "See translation" button that swaps between the two. Plain text — line breaks are kept.
+   */
+  translation?: string | null;
+  /**
    * Anything they attached. Delete any you would rather not publish.
    */
   photos?: (number | MemoryPhoto)[] | null;
@@ -548,6 +552,7 @@ export interface MemoriesSelect<T extends boolean = true> {
   relationship?: T;
   title?: T;
   body?: T;
+  translation?: T;
   photos?: T;
   video?: T;
   email?: T;

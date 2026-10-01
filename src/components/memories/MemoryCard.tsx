@@ -3,6 +3,7 @@ import { PayloadImage } from '@/components/primitives/PayloadImage'
 import { PayloadVideo } from '@/components/primitives/PayloadVideo'
 import { Rule } from '@/components/primitives/Rule'
 import type { Memory } from '@/payload-types'
+import { buttonClasses } from '@/styles/variants'
 
 /**
  * One memory, as it appears on /memories.
@@ -17,6 +18,14 @@ import type { Memory } from '@/payload-types'
  * correctly forever — so this is the only thing keeping someone's paragraphs
  * from collapsing into one block. React escapes the content, so there is no
  * injection surface to close.
+ *
+ * A memory written in another language can carry a translation, added by Alex
+ * in the admin. It sits behind a "See translation" control that swaps the text
+ * in place and becomes "See original". A <details> rather than a button with
+ * state: the browser does the toggling and announces it as expanded or
+ * collapsed, so this stays a server component, adds no client JavaScript and
+ * works with it turned off. The control sits above the text so it stays in one
+ * place whichever version is showing. memory-card.css does the swap.
  */
 export function MemoryCard({ memory }: { memory: Memory }) {
   const photos = (memory.photos ?? []).filter((photo) => typeof photo !== 'number')
@@ -29,7 +38,26 @@ export function MemoryCard({ memory }: { memory: Memory }) {
         </Heading>
       ) : null}
 
-      <div className="prose-body max-w-measure whitespace-pre-line">{memory.body}</div>
+      {memory.translation ? (
+        <details className="memory-translation">
+          <summary className={buttonClasses('secondary', 'sm', 'default', 'sans', 'light')}>
+            <span className="memory-translation-show">See translation</span>
+            <span className="memory-translation-hide">See original</span>
+          </summary>
+          <div className="prose-body mt-6 max-w-measure whitespace-pre-line">
+            {memory.translation}
+          </div>
+        </details>
+      ) : null}
+
+      <div
+        className={[
+          'memory-original prose-body max-w-measure whitespace-pre-line',
+          memory.translation ? 'mt-6' : '',
+        ].join(' ')}
+      >
+        {memory.body}
+      </div>
 
       {photos.length > 0 ? (
         <ul
