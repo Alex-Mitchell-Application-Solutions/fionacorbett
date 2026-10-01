@@ -85,7 +85,8 @@ it. Put it here.
   same function, so previous and next cannot walk a different order from the
   page. Blank manual order sorts last, not first — see the test.
 - ✅ **A slideshow, from a "Play as a slideshow" link in the gallery's hero.**
-  Every photograph full screen in the same flattened order, fading on after a
+  Every photograph in the gallery grid's 4:5 crop, as large as the screen
+  allows, so each is the same size; in the same flattened order, fading on after a
   pause set by `slideshowSeconds` in site settings (5 by default, clamped to
   2–60 by `slideshowIntervalMs`). Previous, pause and next are words, not icons;
   pause takes focus on opening (WCAG 2.2.2); arrow keys and a swipe also step.

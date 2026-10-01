@@ -152,12 +152,17 @@ export function GallerySlideshow({ slides, intervalMs }: { slides: Slide[]; inte
                 data-current={slide.id === current.id ? '' : undefined}
                 aria-hidden={slide.id === current.id ? undefined : true}
               >
-                <PayloadImage
-                  media={slide.image}
-                  sizes="100vw"
-                  className="gallery-slideshow-image"
-                  onSettled={() => markSettled(slide.id)}
-                />
+                {/* The same 4:5 crop as the gallery grid, as large as the
+                    stage allows, so every photograph is the same size on
+                    screen whatever its resolution or orientation. */}
+                <div className="gallery-slideshow-frame">
+                  <PayloadImage
+                    media={slide.image}
+                    sizes="100vw"
+                    className="gallery-slideshow-image"
+                    onSettled={() => markSettled(slide.id)}
+                  />
+                </div>
               </div>
             ))}
           </div>
