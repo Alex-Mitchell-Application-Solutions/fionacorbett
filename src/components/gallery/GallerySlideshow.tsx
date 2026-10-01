@@ -4,6 +4,7 @@ import { type MouseEvent, useCallback, useEffect, useRef, useState } from 'react
 
 import { Button } from '@/components/primitives/Button'
 import { PayloadImage } from '@/components/primitives/PayloadImage'
+import { Text } from '@/components/primitives/Text'
 import type { Slide } from '@/lib/gallery'
 
 /**
@@ -170,7 +171,7 @@ export function GallerySlideshow({ slides, intervalMs }: { slides: Slide[]; inte
           <div className="gallery-slideshow-stage" />
         )}
 
-        <div className="gutter flex flex-col items-center gap-4 py-5 text-center">
+        <div className="gutter relative flex flex-col items-center gap-4 py-5 text-center">
           {/* Announced only when the reader is driving. While it plays, a
               title read out every few seconds talks over everything else. */}
           <p aria-live={playing ? 'off' : 'polite'} aria-atomic="true">
@@ -197,6 +198,18 @@ export function GallerySlideshow({ slides, intervalMs }: { slides: Slide[]; inte
               Next
             </Button>
           </div>
+
+          {/* Where it came from, for anyone watching it on a screen at the
+              party. Set as the footer sets it. On a phone it takes its own line
+              under the controls, which would otherwise run into it; from md
+              there is room in the corner. */}
+          <Text
+            tone="inverse"
+            size="sm"
+            className="opacity-dimmed self-start md:absolute md:bottom-5 md:left-gutter-lg"
+          >
+            fionacorbett.co.uk
+          </Text>
         </div>
       </dialog>
     </>
