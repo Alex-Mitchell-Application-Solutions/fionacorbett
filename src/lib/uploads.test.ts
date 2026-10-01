@@ -2,7 +2,12 @@ import { readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import { IMAGE_UPLOAD_COLLECTIONS, UPLOAD_COLLECTIONS, uploadImagePatterns } from '@/lib/uploads'
+import {
+  IMAGE_UPLOAD_COLLECTIONS,
+  UPLOAD_COLLECTIONS,
+  uploadImagePatterns,
+  versionedUploadUrl,
+} from '@/lib/uploads'
 
 /**
  * Guards a failure that no other check catches.
@@ -82,5 +87,27 @@ describe('uploadImagePatterns', () => {
     const config = readFileSync(path.join(process.cwd(), 'next.config.ts'), 'utf8')
     expect(config).toContain('uploadImagePatterns')
     expect(config).not.toMatch(/pathname: '\/api\//)
+  })
+})
+
+describe('versionedUploadUrl', () => {
+  const url = '/api/memory-photos/file/IMG_0001.jpg'
+
+  it('carries the revision, so a re-cropped file under the same name is a new URL', () => {
+    const before = versionedUploadUrl(url, '2026-09-30T10:00:00.000Z')
+    const after = versionedUploadUrl(url, '2026-10-01T09:30:00.000Z')
+    expect(before).toBe(`${url}?v=${Date.parse('2026-09-30T10:00:00.000Z')}`)
+    expect(after).not.toBe(before)
+  })
+
+  it('appends to an existing query string rather than starting a second one', () => {
+    expect(versionedUploadUrl(`${url}?a=1`, '2026-10-01T09:30:00.000Z')).toMatch(/\?a=1&v=\d+$/)
+  })
+
+  it('leaves the URL alone when there is no usable revision', () => {
+    expect(versionedUploadUrl(url, undefined)).toBe(url)
+    expect(versionedUploadUrl(url, null)).toBe(url)
+    expect(versionedUploadUrl(url, '')).toBe(url)
+    expect(versionedUploadUrl(url, 'not a date')).toBe(url)
   })
 })

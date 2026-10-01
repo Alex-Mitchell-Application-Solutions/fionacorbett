@@ -49,3 +49,21 @@ export function uploadFilePattern(slug: UploadCollection): string {
 export function uploadImagePatterns(): { pathname: string }[] {
   return IMAGE_UPLOAD_COLLECTIONS.map((slug) => ({ pathname: uploadFilePattern(slug) }))
 }
+
+/**
+ * An upload's URL with its revision on the end, so an edit to the file reaches
+ * the page.
+ *
+ * Cropping an image in the admin rewrites the file under the same filename, so
+ * the URL does not change. next/image caches what it optimised by URL (for at
+ * least four hours, and serves the stale copy once more after that) and the
+ * browser caches the optimised response as well, so the old crop kept being
+ * served after the page itself had been revalidated. `updatedAt` changes on
+ * every save, which makes it a revision the URL can carry. Payload's file route
+ * ignores the query string.
+ */
+export function versionedUploadUrl(url: string, updatedAt: string | null | undefined): string {
+  const revision = updatedAt ? Date.parse(updatedAt) : Number.NaN
+  if (Number.isNaN(revision)) return url
+  return `${url}${url.includes('?') ? '&' : '?'}v=${revision}`
+}

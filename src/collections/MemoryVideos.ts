@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { ACCEPTED_MEMORY_VIDEO_TYPES } from '@/lib/memories/limits'
+import { revalidateMemories } from '@/lib/revalidate'
 
 /**
  * A video attached to a memory by whoever submitted it. One per memory.
@@ -34,6 +35,12 @@ export const MemoryVideos: CollectionConfig = {
     create: ({ req }) => Boolean(req.user),
     update: ({ req }) => Boolean(req.user),
     delete: ({ req }) => Boolean(req.user),
+  },
+  hooks: {
+    // As with memory-photos: the cached /memories page embeds this document,
+    // so editing its description changes nothing on the page without these.
+    afterChange: [revalidateMemories],
+    afterDelete: [revalidateMemories],
   },
   fields: [
     {

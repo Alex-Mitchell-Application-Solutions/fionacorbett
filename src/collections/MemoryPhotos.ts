@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { ACCEPTED_MEMORY_PHOTO_TYPES } from '@/lib/memories/limits'
+import { revalidateMemories } from '@/lib/revalidate'
 
 /**
  * Photographs attached to a memory by whoever submitted it.
@@ -53,6 +54,14 @@ export const MemoryPhotos: CollectionConfig = {
     create: ({ req }) => Boolean(req.user),
     update: ({ req }) => Boolean(req.user),
     delete: ({ req }) => Boolean(req.user),
+  },
+  hooks: {
+    // A memory embeds its photographs at depth 2, so the cached /memories page
+    // carries this document's alt, dimensions and focal point. Cropping or
+    // editing one here changes no memory, and without these the change sits
+    // invisible until the next deploy.
+    afterChange: [revalidateMemories],
+    afterDelete: [revalidateMemories],
   },
   fields: [
     {

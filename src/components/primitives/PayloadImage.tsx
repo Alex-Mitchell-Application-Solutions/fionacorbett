@@ -1,5 +1,6 @@
 import NextImage from 'next/image'
 
+import { versionedUploadUrl } from '@/lib/uploads'
 import type { Media, MemoryPhoto } from '@/payload-types'
 
 /**
@@ -25,6 +26,8 @@ export type ImageDocument = {
   /** Percentages, 0–100, set by clicking the image in the admin. */
   focalX?: number | null
   focalY?: number | null
+  /** Changes on every save. Carried on the URL so a re-cropped file is refetched. */
+  updatedAt?: string | null
 }
 
 /**
@@ -94,7 +97,7 @@ export function PayloadImage({
   const objectPosition = `${media.focalX ?? 50}% ${media.focalY ?? 50}%`
 
   const common = {
-    src: media.url,
+    src: versionedUploadUrl(media.url, media.updatedAt),
     // `?? ''` covers the memory-photos case, where alt is optional because a
     // guest was never asked for one. An empty alt is the correct rendering for
     // an image with no description — it tells a screen reader to skip it, which
