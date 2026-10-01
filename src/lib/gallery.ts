@@ -132,7 +132,15 @@ export type Slide = {
   title: string
   year: number
   image: ImageDocument
+  /**
+   * Width over height. The slideshow sizes each photograph from its shape, not
+   * its pixels, so a small scan fills the screen as fully as a phone photo.
+   */
+  ratio: number
 }
+
+/** PayloadImage's own fallback when a document carries no dimensions. */
+const FALLBACK_RATIO = 1600 / 1200
 
 /**
  * The slideshow's sequence, from the same flattened order the page and the
@@ -146,7 +154,16 @@ export function toSlides(sequence: Photograph[]): Slide[] {
   return sequence.flatMap(({ id, title, year, image }) => {
     if (!image || typeof image === 'number' || !image.url) return []
     const { url, alt, width, height, focalX, focalY, updatedAt } = image
-    return [{ id, title, year, image: { url, alt, width, height, focalX, focalY, updatedAt } }]
+    const ratio = width && height && width > 0 && height > 0 ? width / height : FALLBACK_RATIO
+    return [
+      {
+        id,
+        title,
+        year,
+        image: { url, alt, width, height, focalX, focalY, updatedAt },
+        ratio,
+      },
+    ]
   })
 }
 

@@ -90,7 +90,9 @@ it. Put it here.
   2–60 by `slideshowIntervalMs`). Previous, pause and next are words, not icons;
   pause takes focus on opening (WCAG 2.2.2); arrow keys and a swipe also step.
   The clock does not start until the photograph has loaded, so a slow phone
-  does not skip past a scan it never drew. Without JavaScript the link goes to
+  does not skip past a scan it never drew. Each photograph is sized from its
+  shape, not its pixels, so a small scan fills the screen as fully as a phone
+  photo; a low-resolution one is shown softer rather than smaller. Without JavaScript the link goes to
   the first photograph's page. `GallerySlideshow`, a modal `<dialog>` like the
   menu drawer, with only the current photograph and its two neighbours in the
   document. Built without a proposal at Alex's request.

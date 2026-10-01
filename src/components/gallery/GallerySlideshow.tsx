@@ -1,6 +1,13 @@
 'use client'
 
-import { type MouseEvent, useCallback, useEffect, useRef, useState } from 'react'
+import {
+  type CSSProperties,
+  type MouseEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 
 import { Button } from '@/components/primitives/Button'
 import { PayloadImage } from '@/components/primitives/PayloadImage'
@@ -152,12 +159,21 @@ export function GallerySlideshow({ slides, intervalMs }: { slides: Slide[]; inte
                 data-current={slide.id === current.id ? '' : undefined}
                 aria-hidden={slide.id === current.id ? undefined : true}
               >
-                <PayloadImage
-                  media={slide.image}
-                  sizes="100vw"
-                  className="gallery-slideshow-image"
-                  onSettled={() => markSettled(slide.id)}
-                />
+                {/* The frame takes the photograph's shape at the largest size
+                    the stage allows, and the image fills it. Sized from the
+                    ratio rather than the pixels, so a small scan is shown as
+                    large as a phone photo instead of at its own resolution. */}
+                <div
+                  className="gallery-slideshow-frame"
+                  style={{ '--slide-ratio': slide.ratio } as CSSProperties}
+                >
+                  <PayloadImage
+                    media={slide.image}
+                    sizes="100vw"
+                    className="gallery-slideshow-image"
+                    onSettled={() => markSettled(slide.id)}
+                  />
+                </div>
               </div>
             ))}
           </div>
