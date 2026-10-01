@@ -244,13 +244,16 @@ export function headingClasses(
   return ['text-balance', ...steps, HEADING_FACES[face], HEADING_WEIGHTS[weight]].join(' ')
 }
 
-export type TextSize = 'sm' | 'base' | 'lg' | 'lead'
+export type TextSize = 'sm' | 'base' | 'lg' | 'xl' | 'lead'
 export type TextTone = 'default' | 'muted' | 'subtle' | 'inverse' | 'accent' | 'danger'
 
 const TEXT_SIZES: Record<TextSize, string> = {
   sm: 'text-sm',
   base: 'text-base',
   lg: 'text-lg',
+  // A line of copy that has to read from across a room, like the site's
+  // address on the slideshow. Plain leading, unlike lead: it is one line.
+  xl: 'text-xl',
   lead: 'text-lead leading-relaxed',
 }
 

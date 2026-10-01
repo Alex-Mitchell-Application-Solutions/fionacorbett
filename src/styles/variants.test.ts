@@ -187,7 +187,7 @@ describe('headingClasses', () => {
 
 describe('textClasses', () => {
   it('emits one tone and one size for every combination', () => {
-    for (const size of ['sm', 'base', 'lg', 'lead'] as const) {
+    for (const size of ['sm', 'base', 'lg', 'xl', 'lead'] as const) {
       for (const tone of ['default', 'muted', 'subtle', 'inverse', 'accent', 'danger'] as const) {
         const classes = textClasses(size, tone)
         expect(classes).not.toContain('undefined')

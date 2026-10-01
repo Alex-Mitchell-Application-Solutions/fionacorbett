@@ -205,7 +205,7 @@ export function GallerySlideshow({ slides, intervalMs }: { slides: Slide[]; inte
               there is room in the corner. */}
           <Text
             tone="inverse"
-            size="sm"
+            size="xl"
             className="opacity-dimmed self-start md:absolute md:bottom-5 md:left-gutter-lg"
           >
             fionacorbett.co.uk

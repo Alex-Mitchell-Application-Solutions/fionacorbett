@@ -173,6 +173,9 @@ export default function DesignSystemPage() {
 
       <Section title="Text" importPath="src/components/primitives/Text.tsx">
         <Row label="Sizes">
+          <Entry code='size="xl"'>
+            <Text size="xl">Extra large</Text>
+          </Entry>
           <Entry code='size="lead"'>
             <Text size="lead">Lead copy</Text>
           </Entry>
