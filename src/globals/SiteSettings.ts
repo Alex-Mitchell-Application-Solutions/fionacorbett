@@ -96,6 +96,18 @@ export const SiteSettings: GlobalConfig = {
             },
             { name: 'galleryTitle', type: 'text', required: true, defaultValue: 'The photographs' },
             { name: 'galleryLead', type: 'textarea' },
+            {
+              name: 'slideshowSeconds',
+              type: 'number',
+              required: true,
+              defaultValue: 5,
+              min: 2,
+              max: 60,
+              admin: {
+                description:
+                  'How long the slideshow stays on each photograph, in seconds. Anyone watching can still pause it.',
+              },
+            },
           ],
         },
         {

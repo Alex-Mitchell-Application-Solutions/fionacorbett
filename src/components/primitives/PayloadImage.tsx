@@ -59,6 +59,7 @@ export function PayloadImage({
   className,
   fill = false,
   decorative = false,
+  onSettled,
 }: {
   media: number | ImageDocument | null | undefined
   sizes: string
@@ -82,6 +83,13 @@ export function PayloadImage({
    * the same photograph announces it twice.
    */
   decorative?: boolean
+  /**
+   * Called once the image has loaded or failed to. Only usable from a client
+   * component — the slideshow, which waits for a photograph to arrive before it
+   * starts timing it. next/image also fires this for an image already in the
+   * cache, which a bare load listener added after hydration would miss.
+   */
+  onSettled?: () => void
 }) {
   // A depth-0 query returns the id rather than the document. That is a query bug
   // at the call site, not something to paper over with a placeholder.
@@ -106,6 +114,8 @@ export function PayloadImage({
     preload,
     className,
     sizes,
+    onLoad: onSettled,
+    onError: onSettled,
   }
 
   if (fill) {

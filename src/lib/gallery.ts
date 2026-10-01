@@ -1,3 +1,4 @@
+import type { ImageDocument } from '@/components/primitives/PayloadImage'
 import type { Photograph } from '@/payload-types'
 
 /**
@@ -87,8 +88,8 @@ export function groupByDecade(photographs: Photograph[]): Decade[] {
 }
 
 /**
- * The flat sequence the lightbox steps through, in the order the page shows
- * them.
+ * The flat sequence the single-photograph route and the slideshow step through,
+ * in the order the page shows them.
  *
  * Derived from the grouped form rather than sorted separately, so the arrows
  * cannot walk a different order from the one on screen. Sorting twice in two
@@ -117,4 +118,51 @@ export function neighboursOf(
     previous: sequence[index - 1] ?? null,
     next: sequence[index + 1] ?? null,
   }
+}
+
+/**
+ * One photograph as the slideshow needs it, and nothing more.
+ *
+ * The slideshow is a client component, so everything handed to it is serialised
+ * into the page. A full photograph document at depth 2 carries the description,
+ * every image size and the timestamps of both rows; this carries what is drawn.
+ */
+export type Slide = {
+  id: number
+  title: string
+  year: number
+  image: ImageDocument
+}
+
+/**
+ * The slideshow's sequence, from the same flattened order the page and the
+ * single-photograph route use, so playing the gallery walks it in the order it
+ * is laid out.
+ *
+ * A photograph whose image did not resolve to a document is left out rather
+ * than shown as an empty frame for five seconds.
+ */
+export function toSlides(sequence: Photograph[]): Slide[] {
+  return sequence.flatMap(({ id, title, year, image }) => {
+    if (!image || typeof image === 'number' || !image.url) return []
+    const { url, alt, width, height, focalX, focalY, updatedAt } = image
+    return [{ id, title, year, image: { url, alt, width, height, focalX, focalY, updatedAt } }]
+  })
+}
+
+export const SLIDESHOW_DEFAULT_SECONDS = 5
+const SLIDESHOW_MIN_SECONDS = 2
+const SLIDESHOW_MAX_SECONDS = 60
+
+/**
+ * How long the slideshow rests on each photograph, in milliseconds.
+ *
+ * The admin field already enforces the same bounds; this is the boundary check
+ * on the way out of the database, so a value written before those bounds
+ * existed, or by a script, cannot set the slideshow flickering.
+ */
+export function slideshowIntervalMs(seconds: number | null | undefined): number {
+  const value =
+    typeof seconds === 'number' && Number.isFinite(seconds) ? seconds : SLIDESHOW_DEFAULT_SECONDS
+  return Math.min(SLIDESHOW_MAX_SECONDS, Math.max(SLIDESHOW_MIN_SECONDS, value)) * 1000
 }

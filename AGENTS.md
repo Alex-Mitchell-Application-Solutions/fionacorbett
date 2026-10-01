@@ -84,6 +84,16 @@ it. Put it here.
   order, then title. The single-photograph page derives its sequence from the
   same function, so previous and next cannot walk a different order from the
   page. Blank manual order sorts last, not first — see the test.
+- ✅ **A slideshow, from a "Play as a slideshow" link in the gallery's hero.**
+  Every photograph full screen in the same flattened order, fading on after a
+  pause set by `slideshowSeconds` in site settings (5 by default, clamped to
+  2–60 by `slideshowIntervalMs`). Previous, pause and next are words, not icons;
+  pause takes focus on opening (WCAG 2.2.2); arrow keys and a swipe also step.
+  The clock does not start until the photograph has loaded, so a slow phone
+  does not skip past a scan it never drew. Without JavaScript the link goes to
+  the first photograph's page. `GallerySlideshow`, a modal `<dialog>` like the
+  menu drawer, with only the current photograph and its two neighbours in the
+  document. Built without a proposal at Alex's request.
 - 🔵 **View Transitions between photographs.** Would give back the sense of
   staying in place that an overlay has, without giving up the addressable route.
   Deferred because it is an enhancement to a page that already works.
@@ -166,8 +176,8 @@ it. Put it here.
   link was being shared ahead of the rest of the site; that is over and both are
   gone.
 - ✅ **Every page opens on a full-bleed photograph** through one `PageHero`.
-- ✅ **Site settings as a global**, so every hero image and the two home-page
-  link labels change without a deploy.
+- ✅ **Site settings as a global**, so every hero image, the two home-page
+  link labels and the slideshow's pace change without a deploy.
 - ✅ **No page builder.** luxury-gardens has one and earns it with a dozen pages
   and a founder adding more. This has four fixed routes and one editor who can
   ask for a fifth.
@@ -241,6 +251,7 @@ src/
     utilities.css          what Tailwind has no namespace for
     header.css             the header receding over a hero, ported from luxury-gardens
     nav-drawer.css         the menu drawer, ported from luxury-gardens
+    gallery-slideshow.css  the slideshow dialog
   migrations/              generated, committed, applied by the deploy
 scripts/seed.ts            bootstrap an empty database
 .railway/railway.ts        deploy config as code. NOT applied on push
@@ -428,18 +439,20 @@ Checkable. A reviewer should be able to point at a line.
   `/submit-memory` are dynamic.
 - **Nothing above the fold may be a client component.** React would have to
   download, parse and hydrate before the image request started. On a site that is
-  almost entirely photographs, that is the whole performance story.
+  almost entirely photographs, that is the whole performance story. The two
+  exceptions are controls, not content: the menu trigger and the slideshow's
+  play link render as plain HTML first and the hero image does not wait on them.
 - **Exactly one preloaded image per page.** More than one and they compete for
   bandwidth, which makes LCP worse rather than better.
 - **Every image goes through `PayloadImage`**, which takes width and height from
   the document so the box is reserved before the bytes arrive. Layout shift is a
   bug.
 - **`sizes` is stated on every image** and should match the grid it sits in.
-- **There are exactly three client components on this site**: `MemoryForm`,
-  `NavDrawer` and `HeaderShell`. `HeaderShell` holds one boolean — scrolled or
+- **There are exactly four client components on this site**: `MemoryForm`,
+  `NavDrawer`, `HeaderShell` and `GallerySlideshow`. `HeaderShell` holds one boolean — scrolled or
   not — and header.css does the rest. The drawer is a modal `<dialog>` holding one boolean; its links
   are rendered on the server and passed in, so they cost no client JavaScript.
-  Adding a third needs a reason.
+  Adding a fifth needs a reason.
 
 ### Types
 

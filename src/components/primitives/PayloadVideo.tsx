@@ -19,7 +19,7 @@ type _MemoryVideoFits = MustFit<MemoryVideo>
  * **Server-rendered, and there is no reason for it not to be.** A `<video>`
  * needs no hydration: the controls, the keyboard handling and the fullscreen
  * button are the browser's, and they work with JavaScript off. So this adds
- * nothing to the client bundle and does not count against the three client
+ * nothing to the client bundle and does not count against the four client
  * components.
  *
  * What each attribute is for:

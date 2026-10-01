@@ -1,0 +1,83 @@
+/**
+ * The gallery slideshow. A modal <dialog> in the top layer, like the menu
+ * drawer, so nothing here sets a z-index.
+ *
+ * The photographs sit on the inverse ground, not the ivory page: a dark
+ * surround is what lets an underexposed 1960s print and a bright phone photo
+ * both read as themselves.
+ */
+@layer components {
+  .gallery-slideshow {
+    width: 100%;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    border: 0;
+    padding: 0;
+    /* Stated, for the same reason as the drawer: a bare `display: grid` would
+     * override the closed dialog's `display: none`. */
+    display: none;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    background-color: var(--color-surface-inverse);
+    color: var(--color-text-inverse);
+    opacity: 0;
+    transition:
+      opacity var(--duration-slow) var(--ease-out),
+      display var(--duration-slow) var(--ease-out) allow-discrete,
+      overlay var(--duration-slow) var(--ease-out) allow-discrete;
+  }
+
+  .gallery-slideshow[open] {
+    display: grid;
+    opacity: 1;
+  }
+
+  @starting-style {
+    .gallery-slideshow[open] {
+      opacity: 0;
+    }
+  }
+
+  .gallery-slideshow::backdrop {
+    background-color: var(--color-surface-inverse);
+  }
+
+  .gallery-slideshow-stage {
+    position: relative;
+  }
+
+  /* Every slide in the window is stacked in the same place; only the current
+   * one is visible. Moving on fades the old one out and the new one in, at the
+   * same pace as a photograph settling in the grid. */
+  .gallery-slideshow-slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-inline: var(--spacing-gutter);
+    opacity: 0;
+    transition: opacity var(--duration-plate) var(--ease-in-out);
+  }
+
+  .gallery-slideshow-slide[data-current] {
+    opacity: 1;
+  }
+
+  /* Auto on both axes with a ceiling on each, so the image box is exactly the
+   * photograph's shape at the largest size that fits. Never object-fit: a
+   * contained image in a box of another shape would be pushed off-centre by the
+   * focal point PayloadImage sets for cropping. */
+  .gallery-slideshow-image {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  body:has(.gallery-slideshow[open]) {
+    overflow: hidden;
+  }
+}

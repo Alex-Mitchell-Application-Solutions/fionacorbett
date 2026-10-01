@@ -1,4 +1,4 @@
-import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from 'react'
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode, Ref } from 'react'
 
 import { Arrow } from '@/components/primitives/Arrow'
 import {
@@ -25,10 +25,17 @@ type CommonProps = {
 }
 
 type ButtonAsButton = CommonProps &
-  Omit<ButtonHTMLAttributes<HTMLButtonElement>, keyof CommonProps> & { href?: never }
+  Omit<ButtonHTMLAttributes<HTMLButtonElement>, keyof CommonProps> & {
+    href?: never
+    ref?: Ref<HTMLButtonElement>
+  }
 
 type ButtonAsLink = CommonProps &
-  Omit<AnchorHTMLAttributes<HTMLAnchorElement>, keyof CommonProps> & { href: string }
+  Omit<AnchorHTMLAttributes<HTMLAnchorElement>, keyof CommonProps> & {
+    href: string
+    /** A plain prop since React 19; spread onto the element with the rest. */
+    ref?: Ref<HTMLAnchorElement>
+  }
 
 /**
  * Renders an <a> when given href, a <button> otherwise.

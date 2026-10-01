@@ -694,6 +694,10 @@ export interface SiteSetting {
   galleryHero: number | Media;
   galleryTitle: string;
   galleryLead?: string | null;
+  /**
+   * How long the slideshow stays on each photograph, in seconds. Anyone watching can still pause it.
+   */
+  slideshowSeconds: number;
   memoriesHero: number | Media;
   memoriesTitle: string;
   memoriesLead?: string | null;
@@ -724,6 +728,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   galleryHero?: T;
   galleryTitle?: T;
   galleryLead?: T;
+  slideshowSeconds?: T;
   memoriesHero?: T;
   memoriesTitle?: T;
   memoriesLead?: T;

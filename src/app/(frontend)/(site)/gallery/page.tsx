@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
 
 import { DecadeSection } from '@/components/gallery/DecadeSection'
+import { GallerySlideshow } from '@/components/gallery/GallerySlideshow'
 import { PageHero } from '@/components/layout/PageHero'
 import { Container } from '@/components/primitives/Container'
 import { Text } from '@/components/primitives/Text'
 import { getPhotographs, getSiteSettings } from '@/lib/content'
-import { groupByDecade } from '@/lib/gallery'
+import { flattenDecades, groupByDecade, slideshowIntervalMs, toSlides } from '@/lib/gallery'
 
 export const metadata: Metadata = {
   title: 'The photographs',
@@ -23,6 +24,8 @@ export const metadata: Metadata = {
 export default async function GalleryPage() {
   const [settings, photographs] = await Promise.all([getSiteSettings(), getPhotographs()])
   const decades = groupByDecade(photographs)
+  // The same flattened order the single-photograph route walks.
+  const slides = toSlides(flattenDecades(decades))
 
   return (
     <>
@@ -32,10 +35,21 @@ export default async function GalleryPage() {
         lead={settings.galleryLead}
         aside={
           decades.length > 0 ? (
-            <p className="title-face text-lg">
-              {photographs.length} photographs, {decades.length}{' '}
-              {decades.length === 1 ? 'decade' : 'decades'}
-            </p>
+            <div className="flex flex-col items-start gap-4">
+              <p className="title-face text-lg">
+                {photographs.length} photographs, {decades.length}{' '}
+                {decades.length === 1 ? 'decade' : 'decades'}
+              </p>
+              {/* A client component above the fold, which the standards
+                  otherwise forbid. The reason for the rule is the hero image
+                  waiting on hydration; this renders as a plain anchor, the
+                  image does not depend on it, and the menu trigger beside it
+                  in the header is the same arrangement. */}
+              <GallerySlideshow
+                slides={slides}
+                intervalMs={slideshowIntervalMs(settings.slideshowSeconds)}
+              />
+            </div>
           ) : null
         }
       />
