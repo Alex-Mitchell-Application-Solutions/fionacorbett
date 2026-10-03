@@ -31,7 +31,7 @@ export default async function MemoriesPage() {
         aside={
           memories.length > 0 ? (
             <p className="title-face text-lg">
-              {memories.length} {memories.length === 1 ? 'memory' : 'memories'} so far
+              {memories.length} {memories.length === 1 ? 'memory' : 'memories'}
             </p>
           ) : null
         }

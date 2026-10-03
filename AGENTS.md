@@ -98,11 +98,19 @@ it. Put it here.
 - ✅ **A slow scroll down `/gallery` as it is**, from "Scroll through slowly"
   beside the slideshow link, for a screen left running at the party. 50px a
   second, fixed in `src/lib/auto-scroll.ts`; it rests four seconds at the
-  bottom, jumps to the top, rests three and sets off again. Any touch, click,
-  wheel or key stops it, and a "Stop scrolling" button holds the corner and
-  takes focus while it runs (WCAG 2.2.2). Without JavaScript the link goes to
-  the first decade. The same `GalleryPlayback` component as the slideshow, so
-  it adds no client component. Built without a proposal at Alex's request.
+  bottom and goes back to the top. Any touch, click, wheel or key stops it
+  (WCAG 2.2.2); there is no "Stop scrolling" button any more, removed at
+  Alex's request because it sat over the photographs on the party screen.
+  Without JavaScript the link goes to the first decade. The same
+  `GalleryPlayback` component as the slideshow, so it adds no client
+  component. Built without a proposal at Alex's request.
+- ✅ **The slideshow and the scroll take turns.** Whichever is started, when it
+  finishes the other begins, and so on until someone intervenes: the
+  slideshow, once its last photograph's time is up, closes and the scroll sets
+  off from the top after a three-second rest; the scroll, once it has rested
+  at the bottom, goes back up and the slideshow opens on the first photograph.
+  Closing the slideshow or touching the page ends it. Built without a proposal
+  at Alex's request.
 - 🔵 **View Transitions between photographs.** Would give back the sense of
   staying in place that an overlay has, without giving up the addressable route.
   Deferred because it is an enhancement to a page that already works.

@@ -9,9 +9,17 @@
  */
 export function Rule({
   tone = 'default',
+  width = 'short',
   className,
 }: {
   tone?: 'default' | 'inverse'
+  /**
+   * `short` is the hairline's own length. `fill` takes the width of whatever
+   * holds it, so under a heading in a fit-content box it runs exactly as far
+   * as the heading does. A prop rather than a width class at the call site,
+   * so the element never carries two widths.
+   */
+  width?: 'short' | 'fill'
   className?: string
 }) {
   return (
@@ -20,7 +28,7 @@ export function Rule({
       // what the section is.
       aria-hidden="true"
       className={[
-        'block h-px w-16',
+        width === 'fill' ? 'block h-px w-full' : 'block h-px w-16',
         tone === 'inverse' ? 'bg-text-accent-inverse' : 'bg-brand-900',
         className,
       ]

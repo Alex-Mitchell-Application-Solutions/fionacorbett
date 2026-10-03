@@ -89,11 +89,15 @@ export function PageHero({
               </Eyebrow>
             ) : null}
 
-            <Heading level={1} size={{ base: 2, md: 1 }} className="text-text-inverse max-w-3xl">
-              {title}
-            </Heading>
+            {/* Fit-content, so the rule under the title runs exactly as far as
+                the title does, whatever its length. */}
+            <div className="w-fit max-w-3xl">
+              <Heading level={1} size={{ base: 2, md: 1 }} className="text-text-inverse">
+                {title}
+              </Heading>
 
-            <Rule tone="inverse" className="mt-6" />
+              <Rule tone="inverse" width="fill" className="mt-6" />
+            </div>
 
             {lead ? (
               <Text tone="inverse" size="lead" className="mt-6 max-w-xl">

@@ -2,15 +2,17 @@
  * The gallery's slow auto-scroll, as a pure step function.
  *
  * The component calls this once a frame with the time since the last one and
- * applies the position it returns. Everything about pace, the pause at the
- * bottom and the restart from the top lives here, so it is testable without a
- * browser and the component is left holding only a frame loop.
+ * applies the position it returns. Everything about pace and the pauses lives
+ * here, so it is testable without a browser and the component is left holding
+ * only a frame loop.
  *
- * Three phases:
+ * Four phases:
  *
+ *   top     resting at the top before setting off, when it starts there
  *   moving  down the page at a fixed pace
  *   end     resting at the bottom, so the last photographs are seen
- *   top     back at the top after the jump, resting before it sets off again
+ *   done    back at the top, finished: the component hands over to the
+ *           slideshow, which hands back when it has played through
  */
 
 /** A slow reading pace: a gallery row of about 500px takes ten seconds. */
@@ -27,13 +29,18 @@ export const AUTO_SCROLL_MAX_FRAME_MS = 100
 export type AutoScrollState = {
   /** Fractional, unlike scrollY: at 50px a second most frames move under a pixel. */
   position: number
-  phase: 'moving' | 'end' | 'top'
+  phase: 'top' | 'moving' | 'end' | 'done'
   /** Time spent in the current hold. */
   heldMs: number
 }
 
 export function startAutoScroll(position: number): AutoScrollState {
   return { position: Math.max(0, position), phase: 'moving', heldMs: 0 }
+}
+
+/** From the top, resting there first: the start after the slideshow hands back. */
+export function startAutoScrollFromTop(): AutoScrollState {
+  return { position: 0, phase: 'top', heldMs: 0 }
 }
 
 /**
@@ -58,7 +65,7 @@ export function stepAutoScroll(
     }
     case 'end': {
       const heldMs = state.heldMs + elapsed
-      if (heldMs >= AUTO_SCROLL_END_HOLD_MS) return { position: 0, phase: 'top', heldMs: 0 }
+      if (heldMs >= AUTO_SCROLL_END_HOLD_MS) return { position: 0, phase: 'done', heldMs: 0 }
       return { ...state, position: max, heldMs }
     }
     case 'top': {
@@ -66,5 +73,7 @@ export function stepAutoScroll(
       if (heldMs >= AUTO_SCROLL_TOP_HOLD_MS) return { position: 0, phase: 'moving', heldMs: 0 }
       return { ...state, position: 0, heldMs }
     }
+    case 'done':
+      return state
   }
 }

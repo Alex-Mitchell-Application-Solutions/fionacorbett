@@ -393,6 +393,22 @@ export default function DesignSystemPage() {
             <Rule tone="inverse" />
           </InverseEntry>
         </Row>
+        <Row label="Filling a fit-content box, so it runs as wide as the heading above it">
+          <Entry code='<Rule width="fill" />'>
+            <div className="w-fit">
+              <Heading level={3}>As wide as this</Heading>
+              <Rule width="fill" className="mt-3" />
+            </div>
+          </Entry>
+          <InverseEntry code='<Rule tone="inverse" width="fill" />'>
+            <div className="w-fit">
+              <Heading level={3} className="text-text-inverse">
+                As wide as this
+              </Heading>
+              <Rule tone="inverse" width="fill" className="mt-3" />
+            </div>
+          </InverseEntry>
+        </Row>
       </Section>
 
       <Section title="Elevation and radii" importPath="src/styles/tokens.css">

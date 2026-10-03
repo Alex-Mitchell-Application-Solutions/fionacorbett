@@ -7,6 +7,7 @@ import {
   AUTO_SCROLL_TOP_HOLD_MS,
   type AutoScrollState,
   startAutoScroll,
+  startAutoScrollFromTop,
   stepAutoScroll,
 } from '@/lib/auto-scroll'
 
@@ -58,15 +59,22 @@ describe('stepAutoScroll', () => {
     expect(after).toEqual({ position: 1000, phase: 'end', heldMs: 0 })
   })
 
-  it('rests at the bottom, then goes back to the top, rests, and sets off again', () => {
-    let state: AutoScrollState = { position: 1000, phase: 'end', heldMs: 0 }
+  it('rests at the bottom, then finishes back at the top', () => {
+    const state: AutoScrollState = { position: 1000, phase: 'end', heldMs: 0 }
 
     const atEnd = run(state, 1000, (s) => s.phase !== 'end')
     expect(atEnd.frames * 16).toBeGreaterThanOrEqual(AUTO_SCROLL_END_HOLD_MS)
-    expect(atEnd.state).toEqual({ position: 0, phase: 'top', heldMs: 0 })
+    expect(atEnd.state).toEqual({ position: 0, phase: 'done', heldMs: 0 })
+  })
 
-    state = atEnd.state
-    const atTop = run(state, 1000, (s) => s.phase !== 'top')
+  it('stays finished, so the frame that hands over cannot set it off again', () => {
+    const done: AutoScrollState = { position: 0, phase: 'done', heldMs: 0 }
+    expect(stepAutoScroll(done, 16, 1000)).toEqual(done)
+    expect(stepAutoScroll(done, 60_000, 1000)).toEqual(done)
+  })
+
+  it('started from the top, rests there before setting off', () => {
+    const atTop = run(startAutoScrollFromTop(), 1000, (s) => s.phase !== 'top')
     expect(atTop.frames * 16).toBeGreaterThanOrEqual(AUTO_SCROLL_TOP_HOLD_MS)
     expect(atTop.state).toEqual({ position: 0, phase: 'moving', heldMs: 0 })
   })

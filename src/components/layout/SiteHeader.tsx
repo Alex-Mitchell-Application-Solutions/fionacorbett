@@ -5,8 +5,8 @@ import { NavDrawer } from '@/components/layout/NavDrawer'
 import { Container } from '@/components/primitives/Container'
 
 /**
- * The fixed bar over every page in the site proper: the name on the left, the
- * menu button on the right.
+ * The fixed bar over every page in the site proper: the name and the site's
+ * address on the left, the menu button on the right.
  *
  * The links live in a drawer that slides in from the right, ported from
  * luxury-gardens. The drawer is the only client code here; the list below is
@@ -17,9 +17,9 @@ import { Container } from '@/components/primitives/Container'
  * the type settles to ink. See header.css and HeaderShell.
  */
 const LINKS = [
-  { href: '/tell-fiona', label: 'Tell Fiona what she means to you' },
   { href: '/gallery', label: 'The photographs' },
   { href: '/memories', label: 'Memories' },
+  { href: '/tell-fiona', label: 'Tell Fiona what she means to you' },
 ] as const
 
 function DrawerPanel() {
@@ -49,14 +49,21 @@ export function SiteHeader() {
   return (
     <HeaderShell className="site-header inset-x-0 top-0 z-header h-header">
       <Container width="wide" className="flex h-full items-center justify-between gap-6">
-        <Link
-          href="/"
-          className="site-header-persistent title-face whitespace-nowrap text-lg sm:text-xl"
-          // Labelled because "Fiona Corbett" alone does not say where it goes.
-          aria-label="Fiona Corbett, home"
-        >
-          Fiona Corbett
-        </Link>
+        <div className="flex min-w-0 items-baseline gap-4">
+          <Link
+            href="/"
+            className="site-header-persistent title-face whitespace-nowrap text-lg sm:text-xl"
+            // Labelled because "Fiona Corbett" alone does not say where it goes.
+            aria-label="Fiona Corbett, home"
+          >
+            Fiona Corbett
+          </Link>
+          {/* The address, for anyone reading it off a screen at the party. From
+              sm only: at 320px it does not fit beside the name and the menu. */}
+          <span className="site-header-persistent font-body hidden whitespace-nowrap text-sm opacity-dimmed sm:inline">
+            fionacorbett.co.uk
+          </span>
+        </div>
 
         <div className="site-header-persistent">
           <NavDrawer panel={<DrawerPanel />} />

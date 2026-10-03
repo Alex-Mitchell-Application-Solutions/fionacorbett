@@ -5,7 +5,7 @@ import { type MouseEvent, useCallback, useEffect, useRef, useState } from 'react
 import { Button } from '@/components/primitives/Button'
 import { PayloadImage } from '@/components/primitives/PayloadImage'
 import { Text } from '@/components/primitives/Text'
-import { startAutoScroll, stepAutoScroll } from '@/lib/auto-scroll'
+import { startAutoScroll, startAutoScrollFromTop, stepAutoScroll } from '@/lib/auto-scroll'
 import type { Slide } from '@/lib/gallery'
 
 /**
@@ -14,8 +14,14 @@ import type { Slide } from '@/lib/gallery'
  *   - **A slideshow**: every photograph full screen in gallery order, moving on
  *     by itself after a pause Alex sets in site settings.
  *   - **A slow scroll** down /gallery as it is, which rests at the bottom and
- *     starts again from the top. The page itself, for a screen left running
- *     at the party.
+ *     goes back to the top. The page itself.
+ *
+ * Whichever is started, the two then take turns for as long as nobody touches
+ * anything, for a screen left running at the party: the slideshow, once it has
+ * played its last photograph, closes and the scroll sets off from the top; the
+ * scroll, once it has rested at the bottom, goes back up and the slideshow
+ * opens on the first photograph. Closing the slideshow or touching the page
+ * during the scroll ends it.
  *
  * One client component, the fourth on the site, rather than one each: both are
  * the same kind of thing — the gallery moving by itself — and the triggers sit
@@ -35,9 +41,10 @@ import type { Slide } from '@/lib/gallery'
  *
  * WCAG 2.2.2: anything that moves by itself for more than five seconds needs a
  * way to pause it. In the slideshow, pause is the first control and takes focus
- * on opening. The scroll stops at any touch, click, wheel or key, and shows a
- * "Stop scrolling" button that takes focus, so stopping it never depends on
- * knowing that.
+ * on opening. The scroll stops at any touch, click, wheel or key. It used to
+ * show a "Stop scrolling" button as well; Alex had it removed, because on a
+ * screen at the party it sat over the photographs, and any input already stops
+ * the scroll.
  *
  * The scroll trigger is an anchor to the first decade, so without JavaScript it
  * still goes to the photographs.
@@ -56,10 +63,13 @@ export function GalleryPlayback({
   const triggerRef = useRef<HTMLAnchorElement>(null)
   const pauseRef = useRef<HTMLButtonElement>(null)
   const touchStartX = useRef<number | null>(null)
-  const scrollTriggerRef = useRef<HTMLAnchorElement>(null)
-  const stopRef = useRef<HTMLButtonElement>(null)
+  // Set while the slideshow closes itself to hand over to the scroll, so the
+  // close handler can tell that from someone closing it.
+  const handingOver = useRef(false)
 
-  const [autoScrolling, setAutoScrolling] = useState(false)
+  // Where the scroll starts: from wherever the reader is when they ask for it,
+  // or from the top, resting there first, when the slideshow hands over.
+  const [scrolling, setScrolling] = useState<'here' | 'top' | null>(null)
 
   const [open, setOpen] = useState(false)
   const [playing, setPlaying] = useState(true)
@@ -80,10 +90,17 @@ export function GalleryPlayback({
   // the new one its full time rather than whatever was left of the old one's.
   // It does not start until the photograph has actually arrived: on a phone on
   // mobile data, five seconds can pass before a large scan has drawn at all.
+  // The last photograph's time running out is the slideshow finishing: it
+  // closes and hands over to the scroll rather than going round again.
   const currentReady = current ? settled.has(current.id) : false
   useEffect(() => {
-    if (!open || !playing || !currentReady || count < 2) return
-    const timer = window.setTimeout(() => step(1), intervalMs)
+    if (!open || !playing || !currentReady) return
+    const last = index === count - 1
+    const timer = window.setTimeout(() => {
+      if (!last) return step(1)
+      handingOver.current = true
+      dialogRef.current?.close()
+    }, intervalMs)
     return () => window.clearTimeout(timer)
   }, [open, playing, currentReady, count, index, intervalMs, step])
 
@@ -91,12 +108,7 @@ export function GalleryPlayback({
     setSettled((previous) => (previous.has(id) ? previous : new Set(previous).add(id)))
   }, [])
 
-  const openSlideshow = useCallback((event: MouseEvent<HTMLAnchorElement>) => {
-    // Let a modified click through, so it still opens the first photograph in
-    // a new tab the way any other link does.
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
-    event.preventDefault()
-
+  const showSlideshow = useCallback(() => {
     setIndex(0)
     setPlaying(true)
     setOpen(true)
@@ -105,34 +117,34 @@ export function GalleryPlayback({
     pauseRef.current?.focus()
   }, [])
 
+  const openSlideshow = useCallback(
+    (event: MouseEvent<HTMLAnchorElement>) => {
+      // Let a modified click through, so it still opens the first photograph in
+      // a new tab the way any other link does.
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+      event.preventDefault()
+      showSlideshow()
+    },
+    [showSlideshow],
+  )
+
   const close = useCallback(() => dialogRef.current?.close(), [])
 
   const startScrolling = useCallback((event: MouseEvent<HTMLAnchorElement>) => {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
     event.preventDefault()
-    setAutoScrolling(true)
-  }, [])
-
-  const stopScrolling = useCallback(() => {
-    // Focus goes back to the link that started it only if it was on the stop
-    // button, which is about to disappear. preventScroll, because the link is
-    // at the top of the page and the reader has chosen to be where they are.
-    if (document.activeElement === stopRef.current) {
-      scrollTriggerRef.current?.focus({ preventScroll: true })
-    }
-    setAutoScrolling(false)
+    setScrolling('here')
   }, [])
 
   // The scroll. One frame loop, the position kept as a fraction because at 50px
   // a second most frames move less than a pixel and scrollY would round every
   // one of them to nothing. Any sign of the reader taking over stops it; the
-  // scroll's own movement is not listened for, only input.
+  // scroll's own movement is not listened for, only input. Finished, back at
+  // the top, it hands over to the slideshow.
   useEffect(() => {
-    if (!autoScrolling) return
+    if (!scrolling) return
 
-    stopRef.current?.focus({ preventScroll: true })
-
-    let state = startAutoScroll(window.scrollY)
+    let state = scrolling === 'top' ? startAutoScrollFromTop() : startAutoScroll(window.scrollY)
     let last = performance.now()
     let frame = requestAnimationFrame(function tick(now) {
       const max = document.documentElement.scrollHeight - window.innerHeight
@@ -140,18 +152,15 @@ export function GalleryPlayback({
       last = now
       // instant, so a page with smooth scrolling set does not ease every frame.
       window.scrollTo({ top: state.position, behavior: 'instant' })
+      if (state.phase === 'done') {
+        setScrolling(null)
+        showSlideshow()
+        return
+      }
       frame = requestAnimationFrame(tick)
     })
 
-    // A press on the stop button itself is left to its own click. Stopping on
-    // the press would remove the button while the browser was still focusing
-    // it, and focus would fall to the body instead of returning to the link.
-    const onInput = (event: Event) => {
-      if (event.target instanceof Node && stopRef.current?.contains(event.target)) {
-        if (event.type === 'pointerdown' || event.type === 'touchstart') return
-      }
-      stopScrolling()
-    }
+    const onInput = () => setScrolling(null)
     const inputs = ['wheel', 'touchstart', 'pointerdown', 'keydown'] as const
     for (const type of inputs) window.addEventListener(type, onInput, { passive: true })
 
@@ -159,7 +168,7 @@ export function GalleryPlayback({
       cancelAnimationFrame(frame)
       for (const type of inputs) window.removeEventListener(type, onInput)
     }
-  }, [autoScrolling, stopScrolling])
+  }, [scrolling, showSlideshow])
 
   if (!current) return null
 
@@ -189,7 +198,6 @@ export function GalleryPlayback({
           Play as a slideshow
         </Button>
         <Button
-          ref={scrollTriggerRef}
           href={scrollStartHref}
           onClick={startScrolling}
           variant="secondary"
@@ -200,18 +208,6 @@ export function GalleryPlayback({
         </Button>
       </div>
 
-      {autoScrolling ? (
-        <Button
-          ref={stopRef}
-          variant="primary"
-          size="sm"
-          onClick={stopScrolling}
-          className="gallery-autoscroll-stop"
-        >
-          Stop scrolling
-        </Button>
-      ) : null}
-
       <dialog
         ref={dialogRef}
         aria-label="Slideshow of the photographs"
@@ -219,7 +215,16 @@ export function GalleryPlayback({
         // Fires for Escape and for close(), so state and element cannot disagree.
         onClose={() => {
           setOpen(false)
-          triggerRef.current?.focus()
+          if (!handingOver.current) {
+            triggerRef.current?.focus()
+            return
+          }
+          // Played through: the scroll takes over from the top. Focus goes back
+          // to the trigger without moving the page, which the scroll now owns.
+          handingOver.current = false
+          triggerRef.current?.focus({ preventScroll: true })
+          window.scrollTo({ top: 0, behavior: 'instant' })
+          setScrolling('top')
         }}
         onKeyDown={(event) => {
           if (event.key === 'ArrowRight') step(1)

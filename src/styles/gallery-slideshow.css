@@ -96,16 +96,6 @@
     object-fit: cover;
   }
 
-  /* The way out of the slow scroll, held in the corner while it runs, because
-   * the link that started it has scrolled away. Bottom right, clear of the
-   * header, and above the page but not above the header. */
-  .gallery-autoscroll-stop {
-    position: fixed;
-    inset-inline-end: var(--spacing-gutter);
-    inset-block-end: var(--spacing-gutter);
-    z-index: var(--z-sticky);
-  }
-
   body:has(.gallery-slideshow[open]) {
     overflow: hidden;
   }
