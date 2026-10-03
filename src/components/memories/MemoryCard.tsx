@@ -60,13 +60,14 @@ export function MemoryCard({ memory }: { memory: Memory }) {
       </div>
 
       {photos.length > 0 ? (
+        // Every photograph in the gallery's 4:5 crop, so a row lines up however
+        // many there are and whatever shape each was taken in. On a phone a lone
+        // photograph takes the full width, as it does in the gallery: half a
+        // phone's width beside an empty column looks like something failed to load.
         <ul
           className={[
-            'mt-8 grid gap-4',
-            // One photograph runs wider; several sit in a row. A lone image
-            // stretched across a three-column grid looks like a mistake, and
-            // three images at full width would push the next memory off screen.
-            photos.length === 1 ? 'max-w-feature grid-cols-1' : 'grid-cols-2 sm:grid-cols-3',
+            'mt-8 grid gap-4 sm:grid-cols-3',
+            photos.length === 1 ? 'grid-cols-1' : 'grid-cols-2',
           ].join(' ')}
         >
           {photos.map((photo) => (
@@ -75,10 +76,10 @@ export function MemoryCard({ memory }: { memory: Memory }) {
                 media={photo}
                 sizes={
                   photos.length === 1
-                    ? '(width >= 56rem) 56rem, 92vw'
+                    ? '(width >= 40rem) 30vw, 92vw'
                     : '(width >= 40rem) 30vw, 45vw'
                 }
-                className="w-full rounded-sm bg-surface-sunken object-cover"
+                className="aspect-[4/5] w-full rounded-sm bg-surface-sunken object-cover"
               />
             </li>
           ))}
