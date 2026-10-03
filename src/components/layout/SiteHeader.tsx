@@ -58,11 +58,6 @@ export function SiteHeader() {
           >
             Fiona Corbett
           </Link>
-          {/* The address, for anyone reading it off a screen at the party. From
-              sm only: at 320px it does not fit beside the name and the menu. */}
-          <span className="site-header-persistent font-body hidden whitespace-nowrap text-sm opacity-dimmed sm:inline">
-            fionacorbett.co.uk
-          </span>
         </div>
 
         <div className="site-header-persistent">
