@@ -28,10 +28,14 @@ export function DecadeSection({
       className="scroll-mt-header"
     >
       <Container width="wide">
-        <Heading level={2} id={`${decade.slug}-heading`}>
-          {decade.label}
-        </Heading>
-        <Rule className="mt-5" />
+        {/* w-fit, so the rule under the heading runs exactly as far as the
+            decade's name and no further. */}
+        <div className="w-fit">
+          <Heading level={2} id={`${decade.slug}-heading`}>
+            {decade.label}
+          </Heading>
+          <Rule width="fill" className="mt-5" />
+        </div>
 
         <ul className="mt-10 grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
           {decade.photographs.map((photograph, index) => (
